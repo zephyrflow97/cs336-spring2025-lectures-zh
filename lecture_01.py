@@ -32,211 +32,211 @@ def main():
 
     tokenization()
 
-    text("Next time: PyTorch building blocks, resource accounting")
+    text("下次课程：PyTorch 构建模块，资源核算")
 
 
 def welcome():
-    text("## CS336: Language Models From Scratch (Spring 2025)"),
+    text("## CS336: 从零开始构建语言模型 (2025年春季)"),
 
     image("images/course-staff.png", width=600)
 
-    text("This is the second offering of CS336.")
-    text("Stanford edition has grown by 50%.")
-    text("Lectures will be posted on YouTube and be made available to the whole world.")
+    text("这是 CS336 的第二次开课。")
+    text("斯坦福版本已经增长了 50%。")
+    text("讲座将发布在 YouTube 上，并向全世界开放。")
 
 
 def why_this_course_exists():
-    text("## Why did we make this course?")
+    text("## 为什么我们要开设这门课程？")
 
-    text("Let's ask GPT-4 "), link(gpt4)
+    text("让我们问问 GPT-4 "), link(gpt4)
     response = query_gpt4o(prompt="Why teach a course on building language models from scratch? Answer in one sentence.")  # @inspect response
     
-    text("Problem: researchers are becoming **disconnected** from the underlying technology.")
-    text("8 years ago, researchers would implement and train their own models.")
-    text("6 years ago, researchers would download a model (e.g., BERT) and fine-tune it.")
-    text("Today, researchers just prompt a proprietary model (e.g., GPT-4/Claude/Gemini).")
+    text("问题：研究人员正在与底层技术**脱节**。")
+    text("8 年前，研究人员会实现并训练自己的模型。")
+    text("6 年前，研究人员会下载一个模型（例如 BERT）并对其进行微调。")
+    text("今天，研究人员只是提示一个专有模型（例如 GPT-4/Claude/Gemini）。")
 
-    text("Moving up levels of abstractions boosts productivity, but")
-    text("- These abstractions are leaky (in contrast to programming languages or operating systems).")
-    text("- There is still fundamental research to be done that require tearing up the stack.")
+    text("提升抽象层次可以提高生产力，但是")
+    text("- 这些抽象是有漏洞的（与编程语言或操作系统相比）。")
+    text("- 仍然有需要深入底层的基础研究工作要做。")
 
-    text("**Full understanding** of this technology is necessary for **fundamental research**.")
+    text("**全面理解**这项技术对于**基础研究**是必要的。")
 
-    text("This course: **understanding via building**")
-    text("But there's one small problem...")
+    text("本课程：**通过构建来理解**")
+    text("但有一个小问题...")
 
-    text("## The industrialization of language models")
+    text("## 语言模型的工业化")
     image("https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Industrialisation.jpg/440px-Industrialisation.jpg", width=400)
 
-    text("GPT-4 supposedly has 1.8T parameters. "), article_link("https://www.hpcwire.com/2024/03/19/the-generative-ai-future-is-now-nvidias-huang-says")
-    text("GPT-4 supposedly cost $100M to train. "), article_link("https://www.wired.com/story/openai-ceo-sam-altman-the-age-of-giant-ai-models-is-already-over/")
-    text("xAI builds cluster with 200,000 H100s to train Grok. "), article_link("https://www.tomshardware.com/pc-components/gpus/elon-musk-is-doubling-the-worlds-largest-ai-gpu-cluster-expanding-colossus-gpu-cluster-to-200-000-soon-has-floated-300-000-in-the-past")
-    text("Stargate (OpenAI, NVIDIA, Oracle) invests $500B over 4 years. "), article_link("https://openai.com/index/announcing-the-stargate-project/")
+    text("据称 GPT-4 有 1.8T 参数。"), article_link("https://www.hpcwire.com/2024/03/19/the-generative-ai-future-is-now-nvidias-huang-says")
+    text("据称 GPT-4 的训练成本为 1 亿美元。"), article_link("https://www.wired.com/story/openai-ceo-sam-altman-the-age-of-giant-ai-models-is-already-over/")
+    text("xAI 构建了拥有 200,000 个 H100 的集群来训练 Grok。"), article_link("https://www.tomshardware.com/pc-components/gpus/elon-musk-is-doubling-the-worlds-largest-ai-gpu-cluster-expanding-colossus-gpu-cluster-to-200-000-soon-has-floated-300-000-in-the-past")
+    text("Stargate（OpenAI、NVIDIA、Oracle）在 4 年内投资 5000 亿美元。"), article_link("https://openai.com/index/announcing-the-stargate-project/")
 
-    text("Also, there are no public details on how frontier models are built.")
-    text("From the GPT-4 technical report "), link(gpt4), text(":")
+    text("此外，前沿模型的构建方式没有公开细节。")
+    text("来自 GPT-4 技术报告 "), link(gpt4), text("：")
     image("images/gpt4-no-details.png", width=600)
 
-    text("## More is different")
-    text("Frontier models are out of reach for us.")
-    text("But building small language models (<1B parameters in this class) might not be representative of large language models.")
+    text("## 规模不同，性质不同")
+    text("前沿模型对我们来说遥不可及。")
+    text("但构建小型语言模型（本课程中 <1B 参数）可能无法代表大型语言模型。")
 
-    text("Example 1: fraction of FLOPs spent in attention versus MLP changes with scale. "), x_link("https://x.com/stephenroller/status/1579993017234382849")
+    text("示例 1：attention 与 MLP 中花费的 FLOPs 比例随规模变化。"), x_link("https://x.com/stephenroller/status/1579993017234382849")
     image("images/roller-flops.png", width=400)
-    text("Example 2: emergence of behavior with scale "), link("https://arxiv.org/pdf/2206.07682")
+    text("示例 2：随规模出现的涌现行为 "), link("https://arxiv.org/pdf/2206.07682")
     image("images/wei-emergence-plot.png", width=600)
 
-    text("## What can we learn in this class that transfers to frontier models?")
-    text("There are three types of knowledge:")
-    text("- **Mechanics**: how things work (what a Transformer is, how model parallelism leverages GPUs)")
-    text("- **Mindset**: squeezing the most out of the hardware, taking scale seriously (scaling laws)")
-    text("- **Intuitions**: which data and modeling decisions yield good accuracy")
+    text("## 在这门课中我们能学到什么可以迁移到前沿模型？")
+    text("有三种类型的知识：")
+    text("- **机制（Mechanics）**：事物如何工作（什么是 Transformer，模型并行如何利用 GPU）")
+    text("- **思维方式（Mindset）**：充分利用硬件，认真对待规模（scaling laws）")
+    text("- **直觉（Intuitions）**：哪些数据和建模决策能产生良好的准确性")
 
-    text("We can teach mechanics and mindset (these do transfer).")
-    text("We can only partially teach intuitions (do not necessarily transfer across scales).")
+    text("我们可以教授机制和思维方式（这些可以迁移）。")
+    text("我们只能部分教授直觉（不一定能跨规模迁移）。")
 
-    text("## Intuitions? 🤷")
-    text("Some design decisions are simply not (yet) justifiable and just come from experimentation.")
-    text("Example: Noam Shazeer paper that introduced SwiGLU "), link(shazeer_2020)
+    text("## 直觉？🤷")
+    text("有些设计决策（目前）无法证明合理性，只是来自实验。")
+    text("示例：Noam Shazeer 引入 SwiGLU 的论文 "), link(shazeer_2020)
     image("images/divine-benevolence.png", width=600)
 
-    text("## The bitter lesson")
-    text("Wrong interpretation: scale is all that matters, algorithms don't matter.")
-    text("Right interpretation: algorithms that scale is what matters.")
-    text("### accuracy = efficiency x resources")
-    text("In fact, efficiency is way more important at larger scale (can't afford to be wasteful).")
-    link("https://arxiv.org/abs/2005.04305"), text(" showed 44x algorithmic efficiency on ImageNet between 2012 and 2019")
+    text("## 痛苦的教训（The bitter lesson）")
+    text("错误的理解：规模就是一切，算法不重要。")
+    text("正确的理解：能够扩展的算法才是重要的。")
+    text("### 准确性 = 效率 × 资源")
+    text("事实上，在更大规模下效率更加重要（不能浪费）。")
+    link("https://arxiv.org/abs/2005.04305"), text(" 显示在 2012 到 2019 年间，ImageNet 上的算法效率提高了 44 倍")
 
-    text("Framing: what is the best model one can build given a certain compute and data budget?")
-    text("In other words, **maximize efficiency**!")
+    text("框架：在给定的计算和数据预算下，能构建的最佳模型是什么？")
+    text("换句话说，**最大化效率**！")
 
 
 def current_landscape():
-    text("## Pre-neural (before 2010s)")
-    text("- Language model to measure the entropy of English "), link(shannon1950)
-    text("- Lots of work on n-gram language models (for machine translation, speech recognition) "), link(brants2007)
+    text("## 神经网络之前（2010年代之前）")
+    text("- 用于测量英语熵的语言模型 "), link(shannon1950)
+    text("- 大量关于 n-gram 语言模型的工作（用于机器翻译、语音识别）"), link(brants2007)
 
-    text("## Neural ingredients (2010s)")
-    text("- First neural language model "), link(bengio2003)
-    text("- Sequence-to-sequence modeling (for machine translation) "), link(susketver2014)
-    text("- Adam optimizer "), link(adam2014)
-    text("- Attention mechanism (for machine translation) "), link(bahdanau2015_attention)
-    text("- Transformer architecture (for machine translation) "), link(transformer_2017)
+    text("## 神经网络组件（2010年代）")
+    text("- 第一个神经语言模型 "), link(bengio2003)
+    text("- Sequence-to-sequence 建模（用于机器翻译）"), link(susketver2014)
+    text("- Adam 优化器 "), link(adam2014)
+    text("- Attention 机制（用于机器翻译）"), link(bahdanau2015_attention)
+    text("- Transformer 架构（用于机器翻译）"), link(transformer_2017)
     text("- Mixture of experts "), link(moe_2017)
-    text("- Model parallelism "), link(gpipe_2018), link(zero_2019), link(megatron_lm_2019)
+    text("- 模型并行 "), link(gpipe_2018), link(zero_2019), link(megatron_lm_2019)
 
-    text("## Early foundation models (late 2010s)")
-    text("- ELMo: pretraining with LSTMs, fine-tuning helps tasks "), link(elmo)
-    text("- BERT: pretraining with Transformer, fine-tuning helps tasks "), link(bert)
-    text("- Google's T5 (11B): cast everything as text-to-text "), link(t5)
+    text("## 早期基础模型（2010年代末）")
+    text("- ELMo：使用 LSTM 预训练，微调有助于任务 "), link(elmo)
+    text("- BERT：使用 Transformer 预训练，微调有助于任务 "), link(bert)
+    text("- Google 的 T5 (11B)：将所有任务转换为 text-to-text "), link(t5)
 
-    text("## Embracing scaling, more closed")
-    text("- OpenAI's GPT-2 (1.5B): fluent text, first signs of zero-shot, staged release "), link(gpt2)
-    text("- Scaling laws: provide hope / predictability for scaling "), link(kaplan_scaling_laws_2020)
-    text("- OpenAI's GPT-3 (175B): in-context learning, closed "), link(gpt_3)
-    text("- Google's PaLM (540B): massive scale, undertrained "), link(palm)
-    text("- DeepMind's Chinchilla (70B): compute-optimal scaling laws "), link(chinchilla)
+    text("## 拥抱规模，更加封闭")
+    text("- OpenAI 的 GPT-2 (1.5B)：流畅的文本，首次出现 zero-shot 迹象，分阶段发布 "), link(gpt2)
+    text("- Scaling laws：为扩展提供希望/可预测性 "), link(kaplan_scaling_laws_2020)
+    text("- OpenAI 的 GPT-3 (175B)：in-context learning，封闭 "), link(gpt_3)
+    text("- Google 的 PaLM (540B)：大规模，训练不足 "), link(palm)
+    text("- DeepMind 的 Chinchilla (70B)：计算最优 scaling laws "), link(chinchilla)
 
-    text("## Open models")
-    text("- EleutherAI's open datasets (The Pile) and models (GPT-J) "), link(the_pile), link(gpt_j)
-    text("- Meta's OPT (175B): GPT-3 replication, lots of hardware issues "), link(opt_175b)
-    text("- Hugging Face / BigScience's BLOOM: focused on data sourcing "), link(bloom)
-    text("- Meta's Llama models "), link(llama), link(llama2), link(llama3)
-    text("- Alibaba\'s Qwen models "), link(qwen_2_5)
-    text("- DeepSeek\'s models "), link(deepseek_67b), link(deepseek_v2), link(deepseek_v3)
-    text("- AI2's OLMo 2 "), link(olmo_7b), link(olmo2),
+    text("## 开放模型")
+    text("- EleutherAI 的开放数据集（The Pile）和模型（GPT-J）"), link(the_pile), link(gpt_j)
+    text("- Meta 的 OPT (175B)：GPT-3 复现，许多硬件问题 "), link(opt_175b)
+    text("- Hugging Face / BigScience 的 BLOOM：专注于数据来源 "), link(bloom)
+    text("- Meta 的 Llama 模型 "), link(llama), link(llama2), link(llama3)
+    text("- 阿里巴巴的 Qwen 模型 "), link(qwen_2_5)
+    text("- DeepSeek 的模型 "), link(deepseek_67b), link(deepseek_v2), link(deepseek_v3)
+    text("- AI2 的 OLMo 2 "), link(olmo_7b), link(olmo2),
 
-    text("## Levels of openness")
-    text("- Closed models (e.g., GPT-4o): API access only "), link(gpt4)
-    text("- Open-weight models (e.g., DeepSeek): weights available, paper with architecture details, some training details, no data details "), link(deepseek_v3)
-    text("- Open-source models (e.g., OLMo): weights and data available, paper with most details (but not necessarily the rationale, failed experiments) "), link(olmo_7b)
+    text("## 开放程度")
+    text("- 封闭模型（例如 GPT-4o）：仅 API 访问 "), link(gpt4)
+    text("- 开放权重模型（例如 DeepSeek）：权重可用，论文包含架构细节，一些训练细节，无数据细节 "), link(deepseek_v3)
+    text("- 开源模型（例如 OLMo）：权重和数据可用，论文包含大部分细节（但不一定包括理由、失败的实验）"), link(olmo_7b)
 
-    text("## Today's frontier models")
-    text("- OpenAI's o3 "), link("https://openai.com/index/openai-o3-mini/")
-    text("- Anthropic's Claude Sonnet 3.7 "), link("https://www.anthropic.com/news/claude-3-7-sonnet")
-    text("- xAI's Grok 3 "), link("https://x.ai/news/grok-3")
-    text("- Google's Gemini 2.5 "), link("https://blog.google/technology/google-deepmind/gemini-model-thinking-updates-march-2025/")
-    text("- Meta's Llama 3.3 "), link("https://ai.meta.com/blog/meta-llama-3/")
-    text("- DeepSeek's r1 "), link(deepseek_r1)
-    text("- Alibaba's Qwen 2.5 Max "), link("https://qwenlm.github.io/blog/qwen2.5-max/")
-    text("- Tencent's Hunyuan-T1 "), link("https://tencent.github.io/llm.hunyuan.T1/README_EN.html")
+    text("## 当今的前沿模型")
+    text("- OpenAI 的 o3 "), link("https://openai.com/index/openai-o3-mini/")
+    text("- Anthropic 的 Claude Sonnet 3.7 "), link("https://www.anthropic.com/news/claude-3-7-sonnet")
+    text("- xAI 的 Grok 3 "), link("https://x.ai/news/grok-3")
+    text("- Google 的 Gemini 2.5 "), link("https://blog.google/technology/google-deepmind/gemini-model-thinking-updates-march-2025/")
+    text("- Meta 的 Llama 3.3 "), link("https://ai.meta.com/blog/meta-llama-3/")
+    text("- DeepSeek 的 r1 "), link(deepseek_r1)
+    text("- 阿里巴巴的 Qwen 2.5 Max "), link("https://qwenlm.github.io/blog/qwen2.5-max/")
+    text("- 腾讯的 Hunyuan-T1 "), link("https://tencent.github.io/llm.hunyuan.T1/README_EN.html")
 
 
 def what_is_this_program():
-    text("This is an *executable lecture*, a program whose execution delivers the content of a lecture.")
-    text("Executable lectures make it possible to:")
-    text("- view and run code (since everything is code!),")
+    text("这是一个*可执行讲座*，一个通过执行来传递讲座内容的程序。")
+    text("可执行讲座使以下操作成为可能：")
+    text("- 查看和运行代码（因为一切都是代码！），")
     total = 0  # @inspect total
     for x in [1, 2, 3]:  # @inspect x
         total += x  # @inspect total
-    text("- see the hierarchical structure of the lecture, and")
-    text("- jump to definitions and concepts: "), link(supervised_finetuning)
+    text("- 查看讲座的层次结构，以及")
+    text("- 跳转到定义和概念："), link(supervised_finetuning)
 
 
 def course_logistics():
-    text("All information online: "), link("https://stanford-cs336.github.io/spring2025/")
+    text("所有信息都在线上："), link("https://stanford-cs336.github.io/spring2025/")
 
-    text("This is a 5-unit class.")
-    text("Comment from Spring 2024 course evaluation: *The entire assignment was approximately the same amount of work as all 5 assignments from CS 224n plus the final project. And that's just the first homework assignment.*")
+    text("这是一门 5 学分的课程。")
+    text("来自 2024 年春季课程评估的评论：*整个作业的工作量大约相当于 CS 224n 的全部 5 个作业加上最终项目。而这只是第一个作业。*")
 
-    text("## Why you should take this course")
-    text("- You have an obsessive need to understand how things work.")
-    text("- You want to build up your research engineering muscles.")
+    text("## 为什么你应该选这门课")
+    text("- 你有强烈的需求去理解事物的工作原理。")
+    text("- 你想锻炼研究工程能力。")
 
-    text("## Why you should not take this course")
-    text("- You actually want to get research done this quarter.<br>(Talk to your advisor.)")
-    text("- You are interested in learning about the hottest new techniques in AI (e.g., multimodality, RAG, etc.).<br>(You should take a seminar class for that.)")
-    text("- You want to get good results on your own application domain.<br>(You should just prompt or fine-tune an existing model.)")
+    text("## 为什么你不应该选这门课")
+    text("- 你实际上想在本季度完成研究工作。<br>（和你的导师谈谈。）")
+    text("- 你对学习 AI 中最热门的新技术感兴趣（例如多模态、RAG 等）。<br>（你应该选一门研讨课。）")
+    text("- 你想在自己的应用领域获得良好结果。<br>（你应该只需提示或微调现有模型。）")
 
-    text("## How you can follow along at home")
-    text("- All lecture materials and assignments will be posted online, so feel free to follow on your own.")
-    text("- Lectures are recorded via [CGOE, formally SCPD](https://cgoe.stanford.edu/) and be made available on YouTube (with some lag).")
-    text("- We plan to offer this class again next year.")
+    text("## 如何在家跟随学习")
+    text("- 所有讲座材料和作业都将在线发布，所以可以自由跟随学习。")
+    text("- 讲座通过 [CGOE，正式名称 SCPD](https://cgoe.stanford.edu/) 录制，并在 YouTube 上提供（会有一些延迟）。")
+    text("- 我们计划明年再次开设这门课。")
 
-    text("## Assignments")
-    text("- 5 assignments (basics, systems, scaling laws, data, alignment).")
-    text("- No scaffolding code, but we provide unit tests and adapter interfaces to help you check correctness.")
-    text("- Implement locally to test for correctness, then run on cluster for benchmarking (accuracy and speed).")
-    text("- Leaderboard for some assignments (minimize perplexity given training budget).")
-    text("- AI tools (e.g., CoPilot, Cursor) can take away from learning, so use at your own risk.")
+    text("## 作业")
+    text("- 5 个作业（基础、系统、scaling laws、数据、对齐）。")
+    text("- 没有脚手架代码，但我们提供单元测试和适配器接口来帮助你检查正确性。")
+    text("- 在本地实现以测试正确性，然后在集群上运行以进行基准测试（准确性和速度）。")
+    text("- 某些作业有排行榜（在给定训练预算下最小化困惑度）。")
+    text("- AI 工具（例如 CoPilot、Cursor）可能会影响学习，所以使用时需自担风险。")
 
-    text("## Cluster")
-    text("- Thanks to Together AI for providing a compute cluster. 🙏")
-    text("- Please read [the guide](https://docs.google.com/document/d/1BSSig7zInyjDKcbNGftVxubiHlwJ-ZqahQewIzBmBOo/edit) on how to use the cluster.")
-    text("- Start your assignments early, since the cluster will fill up close to the deadline!")
+    text("## 集群")
+    text("- 感谢 Together AI 提供计算集群。🙏")
+    text("- 请阅读[指南](https://docs.google.com/document/d/1BSSig7zInyjDKcbNGftVxubiHlwJ-ZqahQewIzBmBOo/edit)了解如何使用集群。")
+    text("- 尽早开始作业，因为临近截止日期时集群会被占满！")
 
 
 def course_components():
-    text("## It's all about efficiency")
-    text("Resources: data + hardware (compute, memory, communication bandwidth)")
-    text("How do you train the best model given a fixed set of resources?")
-    text("Example: given a Common Crawl dump and 32 H100s for 2 weeks, what should you do?")
+    text("## 一切都关乎效率")
+    text("资源：数据 + 硬件（计算、内存、通信带宽）")
+    text("在给定的固定资源集下，如何训练最佳模型？")
+    text("示例：给定一个 Common Crawl 转储和 32 个 H100，持续 2 周，你应该怎么做？")
 
-    text("Design decisions:")
+    text("设计决策：")
     image("images/design-decisions.png", width=800)
 
-    text("## Overview of the course")
+    text("## 课程概览")
     basics()
     systems()
     scaling_laws()
     data()
     alignment()
 
-    text("## Efficiency drives design decisions")
+    text("## 效率驱动设计决策")
 
-    text("Today, we are compute-constrained, so design decisions will reflect squeezing the most out of given hardware.")
-    text("- Data processing: avoid wasting precious compute updating on bad / irrelevant data")
-    text("- Tokenization: working with raw bytes is elegant, but compute-inefficient with today's model architectures.")
-    text("- Model architecture: many changes motivated by reducing memory or FLOPs (e.g., sharing KV caches, sliding window attention)")
-    text("- Training: we can get away with a single epoch!")
-    text("- Scaling laws: use less compute on smaller models to do hyperparameter tuning")
-    text("- Alignment: if tune model more to desired use cases, require smaller base models")
+    text("今天，我们受计算约束，因此设计决策将反映如何充分利用给定硬件。")
+    text("- 数据处理：避免在糟糕/无关的数据上浪费宝贵的计算资源")
+    text("- Tokenization：使用原始字节很优雅，但在当今的模型架构下计算效率低下。")
+    text("- 模型架构：许多变化是为了减少内存或 FLOPs（例如共享 KV 缓存、滑动窗口 attention）")
+    text("- 训练：我们可以只用一个 epoch！")
+    text("- Scaling laws：在较小模型上使用更少计算来进行超参数调优")
+    text("- 对齐：如果将模型更多地调整到所需用例，则需要更小的基础模型")
 
-    text("Tomorrow, we will become data-constrained...")
+    text("明天，我们将受到数据约束...")
 
 
 class Tokenizer(ABC):
-    """Abstract interface for a tokenizer."""
+    """Tokenizer 的抽象接口。"""
     def encode(self, string: str) -> list[int]:
         raise NotImplementedError
 
@@ -245,138 +245,138 @@ class Tokenizer(ABC):
 
 
 def basics():
-    text("Goal: get a basic version of the full pipeline working")
-    text("Components: tokenization, model architecture, training")
+    text("目标：让完整流水线的基本版本运行起来")
+    text("组件：tokenization、模型架构、训练")
 
     text("## Tokenization")
-    text("Tokenizers convert between strings and sequences of integers (tokens)")
+    text("Tokenizer 在字符串和整数序列（token）之间进行转换")
     image("images/tokenized-example.png", width=600) 
-    text("Intuition: break up string into popular segments")
+    text("直觉：将字符串分解为常见片段")
 
-    text("This course: Byte-Pair Encoding (BPE) tokenizer "), link(sennrich_2016)
+    text("本课程：Byte-Pair Encoding (BPE) tokenizer "), link(sennrich_2016)
 
-    text("Tokenizer-free approaches: "), link(byt5), link(megabyte), link(blt), link(tfree)
-    text("Use bytes directly, promising, but have not yet been scaled up to the frontier.")
+    text("无 tokenizer 方法："), link(byt5), link(megabyte), link(blt), link(tfree)
+    text("直接使用字节，很有前景，但尚未扩展到前沿水平。")
     
-    text("## Architecture")
-    text("Starting point: original Transformer "), link(transformer_2017)
+    text("## 架构")
+    text("起点：原始 Transformer "), link(transformer_2017)
     image("images/transformer-architecture.png", width=500)
 
-    text("Variants:")
-    text("- Activation functions: ReLU, SwiGLU "), link(shazeer_2020)
-    text("- Positional encodings: sinusoidal, RoPE "), link(rope_2021)
-    text("- Normalization: LayerNorm, RMSNorm "), link(layernorm_2016), link(rms_norm_2019)
-    text("- Placement of normalization: pre-norm versus post-norm "), link(pre_post_norm_2020)
-    text("- MLP: dense, mixture of experts "), link(moe_2017)
-    text("- Attention: full, sliding window, linear "), link(mistral_7b), link("https://arxiv.org/abs/2006.16236")
-    text("- Lower-dimensional attention: group-query attention (GQA), multi-head latent attention (MLA) "), link(gqa), link(mla)
-    text("- State-space models: Hyena "), link("https://arxiv.org/abs/2302.10866")
+    text("变体：")
+    text("- 激活函数：ReLU、SwiGLU "), link(shazeer_2020)
+    text("- 位置编码：sinusoidal、RoPE "), link(rope_2021)
+    text("- 归一化：LayerNorm、RMSNorm "), link(layernorm_2016), link(rms_norm_2019)
+    text("- 归一化的位置：pre-norm 与 post-norm "), link(pre_post_norm_2020)
+    text("- MLP：dense、mixture of experts "), link(moe_2017)
+    text("- Attention：full、sliding window、linear "), link(mistral_7b), link("https://arxiv.org/abs/2006.16236")
+    text("- 低维 attention：group-query attention (GQA)、multi-head latent attention (MLA) "), link(gqa), link(mla)
+    text("- 状态空间模型：Hyena "), link("https://arxiv.org/abs/2302.10866")
 
-    text("## Training")
-    text("- Optimizer (e.g., AdamW, Muon, SOAP) "), link(adam2014), link(adamw2017), link(muon), link(soap)
-    text("- Learning rate schedule (e.g., cosine, WSD) "), link(cosine_learning_rate_2017), link(wsd_2024)
-    text("- Batch size (e..g, critical batch size) "), link(large_batch_training_2018)
-    text("- Regularization (e.g., dropout, weight decay)")
-    text("- Hyperparameters (number of heads, hidden dimension): grid search")
+    text("## 训练")
+    text("- 优化器（例如 AdamW、Muon、SOAP）"), link(adam2014), link(adamw2017), link(muon), link(soap)
+    text("- 学习率调度（例如 cosine、WSD）"), link(cosine_learning_rate_2017), link(wsd_2024)
+    text("- Batch size（例如临界 batch size）"), link(large_batch_training_2018)
+    text("- 正则化（例如 dropout、weight decay）")
+    text("- 超参数（head 数量、隐藏维度）：网格搜索")
 
-    text("## Assignment 1")
+    text("## 作业 1")
     link(title="[GitHub]", url="https://github.com/stanford-cs336/assignment1-basics"), link(title="[PDF]", url="https://github.com/stanford-cs336/assignment1-basics/blob/main/cs336_spring2025_assignment1_basics.pdf")
-    text("- Implement BPE tokenizer")
-    text("- Implement Transformer, cross-entropy loss, AdamW optimizer, training loop")
-    text("- Train on TinyStories and OpenWebText")
-    text("- Leaderboard: minimize OpenWebText perplexity given 90 minutes on a H100 "), link(title="[last year's leaderboard]", url="https://github.com/stanford-cs336/spring2024-assignment1-basics-leaderboard")
+    text("- 实现 BPE tokenizer")
+    text("- 实现 Transformer、交叉熵损失、AdamW 优化器、训练循环")
+    text("- 在 TinyStories 和 OpenWebText 上训练")
+    text("- 排行榜：在 H100 上 90 分钟内最小化 OpenWebText 困惑度 "), link(title="[去年的排行榜]", url="https://github.com/stanford-cs336/spring2024-assignment1-basics-leaderboard")
 
 
 def systems():
-    text("Goal: squeeze the most out of the hardware")
-    text("Components: kernels, parallelism, inference")
+    text("目标：充分利用硬件")
+    text("组件：kernel、并行、推理")
 
-    text("## Kernels")
-    text("What a GPU (A100) looks like:")
+    text("## Kernel")
+    text("GPU (A100) 的样子：")
     image("https://miro.medium.com/v2/resize:fit:2000/format:webp/1*6xoBKi5kL2dZpivFe1-zgw.jpeg", width=800)
-    text("Analogy: warehouse : DRAM :: factory : SRAM")
+    text("类比：仓库 : DRAM :: 工厂 : SRAM")
     image("https://horace.io/img/perf_intro/factory_bandwidth.png", width=400)
-    text("Trick: organize computation to maximize utilization of GPUs by minimizing data movement")
-    text("Write kernels in CUDA/**Triton**/CUTLASS/ThunderKittens")
+    text("技巧：通过最小化数据移动来组织计算，以最大化 GPU 利用率")
+    text("使用 CUDA/**Triton**/CUTLASS/ThunderKittens 编写 kernel")
 
-    text("## Parallelism")
-    text("What if we have multiple GPUs (8 A100s)?")
+    text("## 并行")
+    text("如果我们有多个 GPU（8 个 A100）呢？")
     image("https://www.fibermall.com/blog/wp-content/uploads/2024/09/the-hardware-topology-of-a-typical-8xA100-GPU-host.png", width=500)
-    text("Data movement between GPUs is even slower, but same 'minimize data movement' principle holds")
-    text("Use collective operations (e.g., gather, reduce, all-reduce)")
-    text("Shard (parameters, activations, gradients, optimizer states) across GPUs")
-    text("How to split computation: {data,tensor,pipeline,sequence} parallelism")
+    text("GPU 之间的数据移动更慢，但同样的'最小化数据移动'原则仍然适用")
+    text("使用集合操作（例如 gather、reduce、all-reduce）")
+    text("跨 GPU 分片（参数、激活、梯度、优化器状态）")
+    text("如何拆分计算：{data, tensor, pipeline, sequence} 并行")
     
-    text("## Inference")
-    text("Goal: generate tokens given a prompt (needed to actually use models!)")
-    text("Inference is also needed for reinforcement learning, test-time compute, evaluation")
-    text("Globally, inference compute (every use) exceeds training compute (one-time cost)")
-    text("Two phases: prefill and decode")
+    text("## 推理")
+    text("目标：给定提示生成 token（实际使用模型所需！）")
+    text("推理也需要用于强化学习、测试时计算、评估")
+    text("全球范围内，推理计算（每次使用）超过训练计算（一次性成本）")
+    text("两个阶段：prefill 和 decode")
     image("images/prefill-decode.png", width=500)
-    text("Prefill (similar to training): tokens are given, can process all at once (compute-bound)")
-    text("Decode: need to generate one token at a time (memory-bound)")
-    text("Methods to speed up decoding:")
-    text("- Use cheaper model (via model pruning, quantization, distillation)")
-    text("- Speculative decoding: use a cheaper \"draft\" model to generate multiple tokens, then use the full model to score in parallel (exact decoding!)")
-    text("- Systems optimizations: KV caching, batching")
+    text("Prefill（类似于训练）：token 已给定，可以一次处理所有（计算受限）")
+    text("Decode：需要一次生成一个 token（内存受限）")
+    text("加速解码的方法：")
+    text("- 使用更便宜的模型（通过模型剪枝、量化、蒸馏）")
+    text("- Speculative decoding：使用更便宜的\"草稿\"模型生成多个 token，然后使用完整模型并行评分（精确解码！）")
+    text("- 系统优化：KV 缓存、批处理")
 
-    text("## Assignment 2")
-    link(title="[GitHub from 2024]", url="https://github.com/stanford-cs336/spring2024-assignment2-systems"), link(title="[PDF from 2024]", url="https://github.com/stanford-cs336/spring2024-assignment2-systems/blob/master/cs336_spring2024_assignment2_systems.pdf")
-    text("- Implement a fused RMSNorm kernel in Triton")
-    text("- Implement distributed data parallel training")
-    text("- Implement optimizer state sharding")
-    text("- Benchmark and profile the implementations")
+    text("## 作业 2")
+    link(title="[2024年的 GitHub]", url="https://github.com/stanford-cs336/spring2024-assignment2-systems"), link(title="[2024年的 PDF]", url="https://github.com/stanford-cs336/spring2024-assignment2-systems/blob/master/cs336_spring2024_assignment2_systems.pdf")
+    text("- 在 Triton 中实现融合的 RMSNorm kernel")
+    text("- 实现分布式数据并行训练")
+    text("- 实现优化器状态分片")
+    text("- 对实现进行基准测试和性能分析")
 
 
 def scaling_laws():
-    text("Goal: do experiments at small scale, predict hyperparameters/loss at large scale")
-    text("Question: given a FLOPs budget ($C$), use a bigger model ($N$) or train on more tokens ($D$)?")
-    text("Compute-optimal scaling laws: "), link(kaplan_scaling_laws_2020), link(chinchilla)
+    text("目标：在小规模上做实验，预测大规模的超参数/损失")
+    text("问题：给定 FLOPs 预算（$C$），使用更大的模型（$N$）还是在更多 token 上训练（$D$）？")
+    text("计算最优 scaling laws："), link(kaplan_scaling_laws_2020), link(chinchilla)
     image("images/chinchilla-isoflop.png", width=800)
-    text("TL;DR: $D^* = 20 N^*$ (e.g., 1.4B parameter model should be trained on 28B tokens)")
-    text("But this doesn't take into account inference costs!")
+    text("简而言之：$D^* = 20 N^*$（例如，1.4B 参数模型应该在 28B token 上训练）")
+    text("但这没有考虑推理成本！")
 
-    text("## Assignment 3")
-    link(title="[GitHub from 2024]", url="https://github.com/stanford-cs336/spring2024-assignment3-scaling"), link(title="[PDF from 2024]", url="https://github.com/stanford-cs336/spring2024-assignment3-scaling/blob/master/cs336_spring2024_assignment3_scaling.pdf")
-    text("- We define a training API (hyperparameters -> loss) based on previous runs")
-    text("- Submit \"training jobs\" (under a FLOPs budget) and gather data points")
-    text("- Fit a scaling law to the data points")
-    text("- Submit predictions for scaled up hyperparameters")
-    text("- Leaderboard: minimize loss given FLOPs budget")
+    text("## 作业 3")
+    link(title="[2024年的 GitHub]", url="https://github.com/stanford-cs336/spring2024-assignment3-scaling"), link(title="[2024年的 PDF]", url="https://github.com/stanford-cs336/spring2024-assignment3-scaling/blob/master/cs336_spring2024_assignment3_scaling.pdf")
+    text("- 我们基于之前的运行定义一个训练 API（超参数 -> 损失）")
+    text("- 提交\"训练任务\"（在 FLOPs 预算下）并收集数据点")
+    text("- 将 scaling law 拟合到数据点")
+    text("- 提交扩展超参数的预测")
+    text("- 排行榜：在给定 FLOPs 预算下最小化损失")
 
 
 def data():
-    text("Question: What capabilities do we want the model to have?")
-    text("Multilingual? Code? Math?")
+    text("问题：我们希望模型具有什么能力？")
+    text("多语言？代码？数学？")
     image("https://ar5iv.labs.arxiv.org/html/2101.00027/assets/pile_chart2.png", width=600)
 
-    text("## Evaluation")
-    text("- Perplexity: textbook evaluation for language models")
-    text("- Standardized testing (e.g., MMLU, HellaSwag, GSM8K)")
-    text("- Instruction following (e.g., AlpacaEval, IFEval, WildBench)")
-    text("- Scaling test-time compute: chain-of-thought, ensembling")
-    text("- LM-as-a-judge: evaluate generative tasks")
-    text("- Full system: RAG, agents")
+    text("## 评估")
+    text("- 困惑度（Perplexity）：语言模型的教科书式评估")
+    text("- 标准化测试（例如 MMLU、HellaSwag、GSM8K）")
+    text("- 指令遵循（例如 AlpacaEval、IFEval、WildBench）")
+    text("- 扩展测试时计算：chain-of-thought、集成")
+    text("- LM-as-a-judge：评估生成任务")
+    text("- 完整系统：RAG、agent")
 
-    text("## Data curation")
-    text("- Data does not just fall from the sky.")
+    text("## 数据策划")
+    text("- 数据不会从天而降。")
     look_at_web_data()
-    text("- Sources: webpages crawled from the Internet, books, arXiv papers, GitHub code, etc.")
-    text("- Appeal to fair use to train on copyright data? "), link("https://arxiv.org/pdf/2303.15715.pdf")
-    text("- Might have to license data (e.g., Google with Reddit data) "), article_link("https://www.reuters.com/technology/reddit-ai-content-licensing-deal-with-google-sources-say-2024-02-22/")
-    text("- Formats: HTML, PDF, directories (not text!)")
+    text("- 来源：从互联网爬取的网页、书籍、arXiv 论文、GitHub 代码等。")
+    text("- 诉诸合理使用来训练版权数据？"), link("https://arxiv.org/pdf/2303.15715.pdf")
+    text("- 可能需要授权数据（例如 Google 与 Reddit 数据）"), article_link("https://www.reuters.com/technology/reddit-ai-content-licensing-deal-with-google-sources-say-2024-02-22/")
+    text("- 格式：HTML、PDF、目录（不是文本！）")
 
-    text("## Data processing")
-    text("- Transformation: convert HTML/PDF to text (preserve content, some structure, rewriting)")
-    text("- Filtering: keep high quality data, remove harmful content (via classifiers)")
-    text("- Deduplication: save compute, avoid memorization; use Bloom filters or MinHash")
+    text("## 数据处理")
+    text("- 转换：将 HTML/PDF 转换为文本（保留内容、一些结构、重写）")
+    text("- 过滤：保留高质量数据，删除有害内容（通过分类器）")
+    text("- 去重：节省计算，避免记忆；使用 Bloom filter 或 MinHash")
 
-    text("## Assignment 4")
-    link(title="[GitHub from 2024]", url="https://github.com/stanford-cs336/spring2024-assignment4-data"), link(title="[PDF from 2024]", url="https://github.com/stanford-cs336/spring2024-assignment4-data/blob/master/cs336_spring2024_assignment4_data.pdf")
-    text("- Convert Common Crawl HTML to text")
-    text("- Train classifiers to filter for quality and harmful content")
-    text("- Deduplication using MinHash")
-    text("- Leaderboard: minimize perplexity given token budget")
+    text("## 作业 4")
+    link(title="[2024年的 GitHub]", url="https://github.com/stanford-cs336/spring2024-assignment4-data"), link(title="[2024年的 PDF]", url="https://github.com/stanford-cs336/spring2024-assignment4-data/blob/master/cs336_spring2024_assignment4_data.pdf")
+    text("- 将 Common Crawl HTML 转换为文本")
+    text("- 训练分类器以过滤质量和有害内容")
+    text("- 使用 MinHash 去重")
+    text("- 排行榜：在给定 token 预算下最小化困惑度")
 
 
 def look_at_web_data():
@@ -386,28 +386,28 @@ def look_at_web_data():
     random.shuffle(documents)
     documents = markdownify_documents(documents[:10])
     write_documents(documents, "var/sample-documents.txt")
-    link(title="[sample documents]", url="var/sample-documents.txt")
-    text("It's a wasteland out there!  Need to really process the data.")
+    link(title="[示例文档]", url="var/sample-documents.txt")
+    text("外面是一片荒地！需要真正处理数据。")
 
 
 def alignment():
-    text("So far, a **base model** is raw potential, very good at completing the next token.")
-    text("Alignment makes the model actually useful.")
+    text("到目前为止，**基础模型**是原始潜力，非常擅长完成下一个 token。")
+    text("对齐使模型真正有用。")
 
-    text("Goals of alignment:")
-    text("- Get the language model to follow instructions")
-    text("- Tune the style (format, length, tone, etc.)")
-    text("- Incorporate safety (e.g., refusals to answer harmful questions)")
+    text("对齐的目标：")
+    text("- 让语言模型遵循指令")
+    text("- 调整风格（格式、长度、语气等）")
+    text("- 纳入安全性（例如拒绝回答有害问题）")
 
-    text("Two phases:")
+    text("两个阶段：")
     supervised_finetuning()
     learning_from_feedback()
 
-    text("## Assignment 5")
-    link(title="[GitHub from 2024]", url="https://github.com/stanford-cs336/spring2024-assignment5-alignment"), link(title="[PDF from 2024]", url="https://github.com/stanford-cs336/spring2024-assignment5-alignment/blob/master/cs336_spring2024_assignment5_alignment.pdf")
-    text("- Implement supervised fine-tuning")
-    text("- Implement Direct Preference Optimization (DPO)")
-    text("- Implement Group Relative Preference Optimization (GRPO)")
+    text("## 作业 5")
+    link(title="[2024年的 GitHub]", url="https://github.com/stanford-cs336/spring2024-assignment5-alignment"), link(title="[2024年的 PDF]", url="https://github.com/stanford-cs336/spring2024-assignment5-alignment/blob/master/cs336_spring2024_assignment5_alignment.pdf")
+    text("- 实现监督微调")
+    text("- 实现 Direct Preference Optimization (DPO)")
+    text("- 实现 Group Relative Preference Optimization (GRPO)")
 
 
 @dataclass(frozen=True)
@@ -430,9 +430,9 @@ class PreferenceExample:
 
 
 def supervised_finetuning():
-    text("## Supervised finetuning (SFT)")
+    text("## 监督微调（Supervised finetuning, SFT）")
 
-    text("Instruction data: (prompt, response) pairs")
+    text("指令数据：（提示，响应）对")
     sft_data: list[ChatExample] = [
         ChatExample(
             turns=[
@@ -442,18 +442,18 @@ def supervised_finetuning():
             ],
         ),
     ]
-    text("Data often involves human annotation.")
-    text("Intuition: base model already has the skills, just need few examples to surface them. "), link(lima)
-    text("Supervised learning: fine-tune model to maximize p(response | prompt).")
+    text("数据通常涉及人工标注。")
+    text("直觉：基础模型已经具备技能，只需要少量示例来展现它们。"), link(lima)
+    text("监督学习：微调模型以最大化 p(response | prompt)。")
 
 
 def learning_from_feedback():
-    text("Now we have a preliminary instruction following model.")
-    text("Let's make it better without expensive annotation.")
+    text("现在我们有了一个初步的指令遵循模型。")
+    text("让我们在不进行昂贵标注的情况下改进它。")
     
-    text("## Preference data")
-    text("Data: generate multiple responses using model (e.g., [A, B]) to a given prompt.")
-    text("User provides preferences (e.g., A < B or A > B).")
+    text("## 偏好数据")
+    text("数据：使用模型对给定提示生成多个响应（例如 [A, B]）。")
+    text("用户提供偏好（例如 A < B 或 A > B）。")
     preference_data: list[PreferenceExample] = [
         PreferenceExample(
             history=[
@@ -466,14 +466,14 @@ def learning_from_feedback():
         )
     ]
 
-    text("## Verifiers")
-    text("- Formal verifiers (e.g., for code, math)")
-    text("- Learned verifiers: train against an LM-as-a-judge")
+    text("## 验证器")
+    text("- 形式化验证器（例如用于代码、数学）")
+    text("- 学习的验证器：针对 LM-as-a-judge 进行训练")
 
-    text("## Algorithms")
-    text("- Proximal Policy Optimization (PPO) from reinforcement learning "), link(ppo2017), link(instruct_gpt)
-    text("- Direct Policy Optimization (DPO): for preference data, simpler "), link(dpo)
-    text("- Group Relative Preference Optimization (GRPO): remove value function "), link(grpo)
+    text("## 算法")
+    text("- 来自强化学习的 Proximal Policy Optimization (PPO) "), link(ppo2017), link(instruct_gpt)
+    text("- Direct Policy Optimization (DPO)：用于偏好数据，更简单 "), link(dpo)
+    text("- Group Relative Preference Optimization (GRPO)：移除 value function "), link(grpo)
 
 
 ############################################################
@@ -485,7 +485,7 @@ GPT2_TOKENIZER_REGEX = \
 
 
 def tokenization():
-    text("This unit was inspired by Andrej Karpathy's video on tokenization; check it out! "), youtube_link("https://www.youtube.com/watch?v=zduSFxRajkE")
+    text("本单元受 Andrej Karpathy 关于 tokenization 的视频启发；去看看吧！"), youtube_link("https://www.youtube.com/watch?v=zduSFxRajkE")
 
     intro_to_tokenization()
     tokenization_examples()
@@ -494,22 +494,22 @@ def tokenization():
     word_tokenizer()
     bpe_tokenizer()
 
-    text("## Summary")
-    text("- Tokenizer: strings <-> tokens (indices)")
-    text("- Character-based, byte-based, word-based tokenization highly suboptimal")
-    text("- BPE is an effective heuristic that looks at corpus statistics")
-    text("- Tokenization is a necessary evil, maybe one day we'll just do it from bytes...")
+    text("## 总结")
+    text("- Tokenizer：字符串 <-> token（索引）")
+    text("- 基于字符、基于字节、基于单词的 tokenization 高度次优")
+    text("- BPE 是一种有效的启发式方法，查看语料库统计信息")
+    text("- Tokenization 是一个必要的恶，也许有一天我们只需从字节开始...")
 
 @dataclass(frozen=True)
 class BPETokenizerParams:
-    """All you need to specify a BPETokenizer."""
+    """指定 BPETokenizer 所需的全部内容。"""
     vocab: dict[int, bytes]     # index -> bytes
     merges: dict[tuple[int, int], int]  # index1,index2 -> new_index
 
 
 
 class CharacterTokenizer(Tokenizer):
-    """Represent a string as a sequence of Unicode code points."""
+    """将字符串表示为 Unicode 码点序列。"""
     def encode(self, string: str) -> list[int]:
         return list(map(ord, string))
 
@@ -518,7 +518,7 @@ class CharacterTokenizer(Tokenizer):
 
 
 class ByteTokenizer(Tokenizer):
-    """Represent a string as a sequence of bytes."""
+    """将字符串表示为字节序列。"""
     def encode(self, string: str) -> list[int]:
         string_bytes = string.encode("utf-8")  # @inspect string_bytes
         indices = list(map(int, string_bytes))  # @inspect indices
@@ -531,7 +531,7 @@ class ByteTokenizer(Tokenizer):
 
 
 def merge(indices: list[int], pair: tuple[int, int], new_index: int) -> list[int]:  # @inspect indices, @inspect pair, @inspect new_index
-    """Return `indices`, but with all instances of `pair` replaced with `new_index`."""
+    """返回 `indices`，但将所有 `pair` 实例替换为 `new_index`。"""
     new_indices = []  # @inspect new_indices
     i = 0  # @inspect i
     while i < len(indices):
@@ -545,13 +545,13 @@ def merge(indices: list[int], pair: tuple[int, int], new_index: int) -> list[int
 
 
 class BPETokenizer(Tokenizer):
-    """BPE tokenizer given a set of merges and a vocabulary."""
+    """给定一组合并和词汇表的 BPE tokenizer。"""
     def __init__(self, params: BPETokenizerParams):
         self.params = params
 
     def encode(self, string: str) -> list[int]:
         indices = list(map(int, string.encode("utf-8")))  # @inspect indices
-        # Note: this is a very slow implementation
+        # 注意：这是一个非常慢的实现
         for pair, new_index in self.params.merges.items():  # @inspect pair, @inspect new_index
             indices = merge(indices, pair, new_index)
         return indices
@@ -563,7 +563,7 @@ class BPETokenizer(Tokenizer):
 
 
 def get_compression_ratio(string: str, indices: list[int]) -> float:
-    """Given `string` that has been tokenized into `indices`, ."""
+    """给定已被 tokenize 为 `indices` 的 `string`，计算压缩比。"""
     num_bytes = len(bytes(string, encoding="utf-8"))  # @inspect num_bytes
     num_tokens = len(indices)                       # @inspect num_tokens
     return num_bytes / num_tokens
@@ -576,31 +576,31 @@ def get_gpt2_tokenizer():
 
 
 def intro_to_tokenization():
-    text("Raw text is generally represented as Unicode strings.")
+    text("原始文本通常表示为 Unicode 字符串。")
     string = "Hello, 🌍! 你好!"
 
-    text("A language model places a probability distribution over sequences of tokens (usually represented by integer indices).")
+    text("语言模型在 token 序列上放置概率分布（通常由整数索引表示）。")
     indices = [15496, 11, 995, 0]
 
-    text("So we need a procedure that *encodes* strings into tokens.")
-    text("We also need a procedure that *decodes* tokens back into strings.")
-    text("A "), link(Tokenizer), text(" is a class that implements the encode and decode methods.")
-    text("The **vocabulary size** is number of possible tokens (integers).")
+    text("所以我们需要一个将字符串*编码*为 token 的过程。")
+    text("我们还需要一个将 token *解码*回字符串的过程。")
+    text("一个 "), link(Tokenizer), text(" 是实现 encode 和 decode 方法的类。")
+    text("**词汇表大小**是可能的 token（整数）数量。")
 
 
 def tokenization_examples():
-    text("To get a feel for how tokenizers work, play with this "), link(title="interactive site", url="https://tiktokenizer.vercel.app/?encoder=gpt2")
+    text("要了解 tokenizer 的工作原理，请使用这个 "), link(title="交互式网站", url="https://tiktokenizer.vercel.app/?encoder=gpt2")
 
-    text("## Observations")
-    text("- A word and its preceding space are part of the same token (e.g., \" world\").")
-    text("- A word at the beginning and in the middle are represented differently (e.g., \"hello hello\").")
-    text("- Numbers are tokenized into every few digits.")
+    text("## 观察")
+    text("- 一个单词及其前面的空格是同一个 token 的一部分（例如 \" world\"）。")
+    text("- 开头和中间的单词表示方式不同（例如 \"hello hello\"）。")
+    text("- 数字被 tokenize 为每几位数字。")
 
-    text("Here's the GPT-2 tokenizer from OpenAI (tiktoken) in action.")
+    text("这是来自 OpenAI 的 GPT-2 tokenizer（tiktoken）的实际应用。")
     tokenizer = get_gpt2_tokenizer()
     string = "Hello, 🌍! 你好!"  # @inspect string
 
-    text("Check that encode() and decode() roundtrip:")
+    text("检查 encode() 和 decode() 是否往返：")
     indices = tokenizer.encode(string)  # @inspect indices
     reconstructed_string = tokenizer.decode(indices)  # @inspect reconstructed_string
     assert string == reconstructed_string
@@ -608,134 +608,134 @@ def tokenization_examples():
 
 
 def character_tokenizer():
-    text("## Character-based tokenization")
+    text("## 基于字符的 tokenization")
 
-    text("A Unicode string is a sequence of Unicode characters.")
-    text("Each character can be converted into a code point (integer) via `ord`.")
+    text("Unicode 字符串是 Unicode 字符的序列。")
+    text("每个字符可以通过 `ord` 转换为码点（整数）。")
     assert ord("a") == 97
     assert ord("🌍") == 127757
-    text("It can be converted back via `chr`.")
+    text("可以通过 `chr` 转换回来。")
     assert chr(97) == "a"
     assert chr(127757) == "🌍"
 
-    text("Now let's build a `Tokenizer` and make sure it round-trips:")
+    text("现在让我们构建一个 `Tokenizer` 并确保它往返：")
     tokenizer = CharacterTokenizer()
     string = "Hello, 🌍! 你好!"  # @inspect string
     indices = tokenizer.encode(string)  # @inspect indices
     reconstructed_string = tokenizer.decode(indices)  # @inspect reconstructed_string
     assert string == reconstructed_string
 
-    text("There are approximately 150K Unicode characters. "), link(title="[Wikipedia]", url="https://en.wikipedia.org/wiki/List_of_Unicode_characters")
-    vocabulary_size = max(indices) + 1  # This is a lower bound @inspect vocabulary_size
-    text("Problem 1: this is a very large vocabulary.")
-    text("Problem 2: many characters are quite rare (e.g., 🌍), which is inefficient use of the vocabulary.")
+    text("大约有 150K 个 Unicode 字符。"), link(title="[Wikipedia]", url="https://en.wikipedia.org/wiki/List_of_Unicode_characters")
+    vocabulary_size = max(indices) + 1  # 这是一个下界 @inspect vocabulary_size
+    text("问题 1：这是一个非常大的词汇表。")
+    text("问题 2：许多字符相当罕见（例如 🌍），这是词汇表的低效使用。")
     compression_ratio = get_compression_ratio(string, indices)  # @inspect compression_ratio
 
 
 def byte_tokenizer():
-    text("## Byte-based tokenization")
+    text("## 基于字节的 tokenization")
 
-    text("Unicode strings can be represented as a sequence of bytes, which can be represented by integers between 0 and 255.")
-    text("The most common Unicode encoding is "), link(title="UTF-8", url="https://en.wikipedia.org/wiki/UTF-8")
+    text("Unicode 字符串可以表示为字节序列，可以用 0 到 255 之间的整数表示。")
+    text("最常见的 Unicode 编码是 "), link(title="UTF-8", url="https://en.wikipedia.org/wiki/UTF-8")
 
-    text("Some Unicode characters are represented by one byte:")
+    text("一些 Unicode 字符由一个字节表示：")
     assert bytes("a", encoding="utf-8") == b"a"
-    text("Others take multiple bytes:")
+    text("其他字符需要多个字节：")
     assert bytes("🌍", encoding="utf-8") == b"\xf0\x9f\x8c\x8d"
 
-    text("Now let's build a `Tokenizer` and make sure it round-trips:")
+    text("现在让我们构建一个 `Tokenizer` 并确保它往返：")
     tokenizer = ByteTokenizer()
     string = "Hello, 🌍! 你好!"  # @inspect string
     indices = tokenizer.encode(string)  # @inspect indices
     reconstructed_string = tokenizer.decode(indices)  # @inspect reconstructed_string
     assert string == reconstructed_string
 
-    text("The vocabulary is nice and small: a byte can represent 256 values.")
+    text("词汇表又好又小：一个字节可以表示 256 个值。")
     vocabulary_size = 256  # @inspect vocabulary_size
-    text("What about the compression rate?")
+    text("压缩率如何？")
     compression_ratio = get_compression_ratio(string, indices)  # @inspect compression_ratio
     assert compression_ratio == 1
-    text("The compression ratio is terrible, which means the sequences will be too long.")
-    text("Given that the context length of a Transformer is limited (since attention is quadratic), this is not looking great...")
+    text("压缩比很糟糕，这意味着序列会太长。")
+    text("考虑到 Transformer 的上下文长度是有限的（因为 attention 是二次的），这看起来不太好...")
 
 
 def word_tokenizer():
-    text("## Word-based tokenization")
+    text("## 基于单词的 tokenization")
 
-    text("Another approach (closer to what was done classically in NLP) is to split strings into words.")
+    text("另一种方法（更接近 NLP 中经典做法）是将字符串拆分为单词。")
     string = "I'll say supercalifragilisticexpialidocious!"
 
     segments = regex.findall(r"\w+|.", string)  # @inspect segments
-    text("This regular expression keeps all alphanumeric characters together (words).")
+    text("这个正则表达式将所有字母数字字符保持在一起（单词）。")
 
-    text("Here is a fancier version:")
+    text("这是一个更高级的版本：")
     pattern = GPT2_TOKENIZER_REGEX  # @inspect pattern
     segments = regex.findall(pattern, string)  # @inspect segments
 
-    text("To turn this into a `Tokenizer`, we need to map these segments into integers.")
-    text("Then, we can build a mapping from each segment into an integer.")
+    text("要将其转换为 `Tokenizer`，我们需要将这些片段映射为整数。")
+    text("然后，我们可以构建从每个片段到整数的映射。")
 
-    text("But there are problems:")
-    text("- The number of words is huge (like for Unicode characters).")
-    text("- Many words are rare and the model won't learn much about them.")
-    text("- This doesn't obviously provide a fixed vocabulary size.")
+    text("但存在问题：")
+    text("- 单词数量巨大（就像 Unicode 字符一样）。")
+    text("- 许多单词很罕见，模型不会学到太多关于它们的东西。")
+    text("- 这显然不能提供固定的词汇表大小。")
 
-    text("New words we haven't seen during training get a special UNK token, which is ugly and can mess up perplexity calculations.")
+    text("训练期间未见过的新单词会得到一个特殊的 UNK token，这很丑陋，并且会搞乱困惑度计算。")
 
-    vocabulary_size = "Number of distinct segments in the training data"
+    vocabulary_size = "训练数据中不同片段的数量"
     compression_ratio = get_compression_ratio(string, segments)  # @inspect compression_ratio
 
 
 def bpe_tokenizer():
     text("## Byte Pair Encoding (BPE)")
     link(title="[Wikipedia]", url="https://en.wikipedia.org/wiki/Byte_pair_encoding")
-    text("The BPE algorithm was introduced by Philip Gage in 1994 for data compression. "), article_link("http://www.pennelynn.com/Documents/CUJ/HTML/94HTML/19940045.HTM")
-    text("It was adapted to NLP for neural machine translation. "), link(sennrich_2016)
-    text("(Previously, papers had been using word-based tokenization.)")
-    text("BPE was then used by GPT-2. "), link(gpt2)
+    text("BPE 算法由 Philip Gage 于 1994 年引入用于数据压缩。"), article_link("http://www.pennelynn.com/Documents/CUJ/HTML/94HTML/19940045.HTM")
+    text("它被改编用于神经机器翻译的 NLP。"), link(sennrich_2016)
+    text("（之前，论文一直在使用基于单词的 tokenization。）")
+    text("BPE 随后被 GPT-2 使用。"), link(gpt2)
 
-    text("Basic idea: *train* the tokenizer on raw text to automatically determine the vocabulary.")
-    text("Intuition: common sequences of characters are represented by a single token, rare sequences are represented by many tokens.")
+    text("基本思想：在原始文本上*训练* tokenizer 以自动确定词汇表。")
+    text("直觉：常见的字符序列由单个 token 表示，罕见的序列由许多 token 表示。")
 
-    text("The GPT-2 paper used word-based tokenization to break up the text into inital segments and run the original BPE algorithm on each segment.")
-    text("Sketch: start with each byte as a token, and successively merge the most common pair of adjacent tokens.")
+    text("GPT-2 论文使用基于单词的 tokenization 将文本分解为初始片段，并在每个片段上运行原始 BPE 算法。")
+    text("草图：从每个字节作为 token 开始，并连续合并最常见的相邻 token 对。")
 
-    text("## Training the tokenizer")
+    text("## 训练 tokenizer")
     string = "the cat in the hat"  # @inspect string
     params = train_bpe(string, num_merges=3)
 
-    text("## Using the tokenizer")
-    text("Now, given a new text, we can encode it.")
+    text("## 使用 tokenizer")
+    text("现在，给定一个新文本，我们可以对其进行编码。")
     tokenizer = BPETokenizer(params)
     string = "the quick brown fox"  # @inspect string
     indices = tokenizer.encode(string)  # @inspect indices
     reconstructed_string = tokenizer.decode(indices)  # @inspect reconstructed_string
     assert string == reconstructed_string
 
-    text("In Assignment 1, you will go beyond this in the following ways:")
-    text("- encode() currently loops over all merges. Only loop over merges that matter.")
-    text("- Detect and preserve special tokens (e.g., <|endoftext|>).")
-    text("- Use pre-tokenization (e.g., the GPT-2 tokenizer regex).")
-    text("- Try to make the implementation as fast as possible.")
+    text("在作业 1 中，你将通过以下方式超越这一点：")
+    text("- encode() 当前循环遍历所有合并。只循环重要的合并。")
+    text("- 检测并保留特殊 token（例如 <|endoftext|>）。")
+    text("- 使用预 tokenization（例如 GPT-2 tokenizer regex）。")
+    text("- 尝试使实现尽可能快。")
 
 
 def train_bpe(string: str, num_merges: int) -> BPETokenizerParams:  # @inspect string, @inspect num_merges
-    text("Start with the list of bytes of `string`.")
+    text("从 `string` 的字节列表开始。")
     indices = list(map(int, string.encode("utf-8")))  # @inspect indices
     merges: dict[tuple[int, int], int] = {}  # index1, index2 => merged index
     vocab: dict[int, bytes] = {x: bytes([x]) for x in range(256)}  # index -> bytes
 
     for i in range(num_merges):
-        text("Count the number of occurrences of each pair of tokens")
+        text("计算每对 token 的出现次数")
         counts = defaultdict(int)
-        for index1, index2 in zip(indices, indices[1:]):  # For each adjacent pair
+        for index1, index2 in zip(indices, indices[1:]):  # 对于每个相邻对
             counts[(index1, index2)] += 1  # @inspect counts
 
-        text("Find the most common pair.")
+        text("找到最常见的对。")
         pair = max(counts, key=counts.get)  # @inspect pair
         index1, index2 = pair
 
-        text("Merge that pair.")
+        text("合并该对。")
         new_index = 256 + i  # @inspect new_index
         merges[pair] = new_index  # @inspect merges
         vocab[new_index] = vocab[index1] + vocab[index2]  # @inspect vocab

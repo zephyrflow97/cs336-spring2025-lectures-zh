@@ -11,7 +11,7 @@ wandb
 einops
 jaxtyping
 readable-number
-triton
+# triton
 kenlm
 fasttext
 mmh3

@@ -177,6 +177,13 @@ function TraceViewer() {
       className="trace-viewer-container"
       onMouseDown={handleMouseDown}
     >
+      <a 
+        href="/"
+        className="home-button"
+        title="返回主页 (Home)"
+      >
+        ← 主页
+      </a>
       <div className="lines-panel">{renderedLines}</div>
       <div
         className="env-panel"

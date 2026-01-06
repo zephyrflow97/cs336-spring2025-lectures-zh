@@ -1,7 +1,7 @@
 import torch
 from torch_util import get_device
 
-# util files moved here to de-clutter the lecture debugger steps..  
+# 工具文件移到这里以简化讲座调试器步骤..  
 
 def check_equal(f1, f2):
     x = torch.randn(2048, device=get_device())
@@ -23,7 +23,7 @@ def get_local_url(path: str) -> str:
 
 
 def round1(x: float) -> float:
-    """Round to 1 decimal place."""
+    """四舍五入到 1 位小数。"""
     return round(x, 1)
 
 

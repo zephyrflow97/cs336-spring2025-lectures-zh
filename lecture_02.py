@@ -13,37 +13,37 @@ from references import zero_2019
 
 
 def main():
-    text("Last lecture: overview, tokenization")
+    text("上一讲：概述，tokenization")
 
-    text("Overview of this lecture:")
-    text("- We will discuss all the **primitives** needed to train a model.")
-    text("- We will go bottom-up from tensors to models to optimizers to the training loop.")
-    text("- We will pay close attention to efficiency (use of **resources**).")
+    text("本讲概述：")
+    text("- 我们将讨论训练模型所需的所有**基本组件**。")
+    text("- 我们将自底向上地从 tensors 到 models 到 optimizers 再到训练循环。")
+    text("- 我们将密切关注效率（**资源**的使用）。")
 
-    text("In particular, we will account for two types of resources:")
-    text("- Memory (GB)")
-    text("- Compute (FLOPs)")
+    text("特别地，我们将考虑两种类型的资源：")
+    text("- 内存 (GB)")
+    text("- 计算 (FLOPs)")
 
     motivating_questions()
 
-    text("We will not go over the Transformer.")
-    text("There are excellent expositions:")
+    text("我们不会详细讲解 Transformer。")
+    text("这里有一些优秀的资料：")
     link(title="Assignment 1 handout", url="https://github.com/stanford-cs336/assignment1-basics/blob/main/cs336_spring2025_assignment1_basics.pdf")
     link(title="Mathematical description", url="https://johnthickstun.com/docs/transformers.pdf")
     link(title="Illustrated Transformer", url="http://jalammar.github.io/illustrated-transformer/")
     link(title="Illustrated GPT-2", url="https://jalammar.github.io/illustrated-gpt2/")
-    text("Instead, we'll work with simpler models.")
+    text("相反，我们将使用更简单的模型。")
 
-    text("What knowledge to take away:")
-    text("- Mechanics: straightforward (just PyTorch)")
-    text("- Mindset: resource accounting (remember to do it)")
-    text("- Intuitions: broad strokes (no large models)")
+    text("需要掌握的知识：")
+    text("- 机制：直接明了（只是 PyTorch）")
+    text("- 思维方式：资源核算（记得要做）")
+    text("- 直觉：宏观理解（不涉及大型模型）")
 
-    text("## Memory accounting")
+    text("## 内存核算")
     tensors_basics()
     tensors_memory()
 
-    text("## Compute accounting")
+    text("## 计算核算")
     tensors_on_gpus()
     tensor_operations()
     tensor_einops()
@@ -51,11 +51,11 @@ def main():
     gradients_basics()
     gradients_flops()
 
-    text("## Models")
+    text("## 模型")
     module_parameters()
     custom_model()
 
-    text("Training loop and best practices")
+    text("训练循环和最佳实践")
     note_about_randomness()
     data_loading()
 
@@ -66,110 +66,110 @@ def main():
 
 
 def motivating_questions():
-    text("Let's do some napkin math.")
+    text("让我们做一些粗略计算。")
 
-    text("**Question**: How long would it take to train a 70B parameter model on 15T tokens on 1024 H100s?")
+    text("**问题**：在 1024 个 H100 上训练一个 70B 参数的模型，使用 15T tokens 需要多长时间？")
     total_flops = 6 * 70e9 * 15e12  # @inspect total_flops
     assert h100_flop_per_sec == 1979e12 / 2
     mfu = 0.5
     flops_per_day = h100_flop_per_sec * mfu * 1024 * 60 * 60 * 24  # @inspect flops_per_day
     days = total_flops / flops_per_day  # @inspect days
 
-    text("**Question**: What's the largest model that can you can train on 8 H100s using AdamW (naively)?")
+    text("**问题**：使用 AdamW 在 8 个 H100 上能训练的最大模型是多少（简单估算）？")
     h100_bytes = 80e9  # @inspect h100_bytes
     bytes_per_parameter = 4 + 4 + (4 + 4)  # parameters, gradients, optimizer state  @inspect bytes_per_parameter
     num_parameters = (h100_bytes * 8) / bytes_per_parameter  # @inspect num_parameters
-    text("Caveat 1: we are naively using float32 for parameters and gradients.  We could also use bf16 for parameters and gradients (2 + 2) and keep an extra float32 copy of the parameters (4). This doesn't save memory, but is faster. "), link(zero_2019)
-    text("Caveat 2: activations are not accounted for (depends on batch size and sequence length).")
+    text("注意 1：我们简单地对参数和梯度使用 float32。我们也可以对参数和梯度使用 bf16 (2 + 2) 并保留一个额外的 float32 参数副本 (4)。这不会节省内存，但速度更快。"), link(zero_2019)
+    text("注意 2：激活值未计入（取决于 batch size 和 sequence length）。")
 
-    text("This is a rough back-of-the-envelope calculation.")
+    text("这是一个粗略的估算。")
 
 
 def tensors_basics():
-    text("Tensors are the basic building block for storing everything: parameters, gradients, optimizer state, data, activations.")
+    text("Tensors 是存储所有内容的基本构建块：参数、梯度、optimizer state、数据、激活值。")
     link(title="[PyTorch docs on tensors]", url="https://pytorch.org/docs/stable/tensors.html")
 
-    text("You can create tensors in multiple ways:")
+    text("你可以通过多种方式创建 tensors：")
     x = torch.tensor([[1., 2, 3], [4, 5, 6]])  # @inspect x
-    x = torch.zeros(4, 8)  # 4x8 matrix of all zeros @inspect x
-    x = torch.ones(4, 8)  # 4x8 matrix of all ones @inspect x
-    x = torch.randn(4, 8)  # 4x8 matrix of iid Normal(0, 1) samples @inspect x
+    x = torch.zeros(4, 8)  # 4x8 全零矩阵 @inspect x
+    x = torch.ones(4, 8)  # 4x8 全一矩阵 @inspect x
+    x = torch.randn(4, 8)  # 4x8 独立同分布 Normal(0, 1) 采样矩阵 @inspect x
 
-    text("Allocate but don't initialize the values:")
-    x = torch.empty(4, 8)  # 4x8 matrix of uninitialized values @inspect x
-    text("...because you want to use some custom logic to set the values later")
+    text("分配但不初始化值：")
+    x = torch.empty(4, 8)  # 4x8 未初始化值的矩阵 @inspect x
+    text("...因为你想稍后使用一些自定义逻辑来设置值")
     nn.init.trunc_normal_(x, mean=0, std=1, a=-2, b=2)  # @inspect x
 
 
 def tensors_memory():
-    text("Almost everything (parameters, gradients, activations, optimizer states) are stored as floating point numbers.")
+    text("几乎所有内容（参数、梯度、激活值、optimizer states）都存储为浮点数。")
 
     text("## float32")
     link(title="[Wikipedia]", url="https://en.wikipedia.org/wiki/Single-precision_floating-point_format")
     image("images/fp32.png", width=600)
-    text("The float32 data type (also known as fp32 or single precision) is the default.")
-    text("Traditionally, in scientific computing, float32 is the baseline; you could use double precision (float64) in some cases.")
-    text("In deep learning, you can be a lot sloppier.")
+    text("float32 数据类型（也称为 fp32 或单精度）是默认类型。")
+    text("传统上，在科学计算中，float32 是基准；在某些情况下可以使用双精度（float64）。")
+    text("在深度学习中，你可以更加宽松。")
 
-    text("Let's examine memory usage of these tensors.")
-    text("Memory is determined by the (i) number of values and (ii) data type of each value.")
+    text("让我们检查这些 tensors 的内存使用情况。")
+    text("内存由 (i) 值的数量和 (ii) 每个值的数据类型决定。")
     x = torch.zeros(4, 8)  # @inspect x
-    assert x.dtype == torch.float32  # Default type
+    assert x.dtype == torch.float32  # 默认类型
     assert x.numel() == 4 * 8
-    assert x.element_size() == 4  # Float is 4 bytes
-    assert get_memory_usage(x) == 4 * 8 * 4  # 128 bytes
+    assert x.element_size() == 4  # Float 是 4 字节
+    assert get_memory_usage(x) == 4 * 8 * 4  # 128 字节
 
-    text("One matrix in the feedforward layer of GPT-3:")
+    text("GPT-3 的 feedforward 层中的一个矩阵：")
     assert get_memory_usage(torch.empty(12288 * 4, 12288)) == 2304 * 1024 * 1024  # 2.3 GB
-    text("...which is a lot!")
+    text("...这是很多的！")
 
     text("## float16")
     link(title="[Wikipedia]", url="https://en.wikipedia.org/wiki/Half-precision_floating-point_format")
     image("images/fp16.png", width=400)
-    text("The float16 data type (also known as fp16 or half precision) cuts down the memory.")
+    text("float16 数据类型（也称为 fp16 或半精度）减少了内存。")
     x = torch.zeros(4, 8, dtype=torch.float16)  # @inspect x
     assert x.element_size() == 2
-    text("However, the dynamic range (especially for small numbers) isn't great.")
+    text("然而，动态范围（特别是对于小数）不是很好。")
     x = torch.tensor([1e-8], dtype=torch.float16)  # @inspect x
-    assert x == 0  # Underflow!
-    text("If this happens when you train, you can get instability.")
+    assert x == 0  # 下溢！
+    text("如果在训练时发生这种情况，可能会导致不稳定。")
 
     text("## bfloat16")
     link(title="[Wikipedia]", url="https://en.wikipedia.org/wiki/Bfloat16_floating-point_format")
     image("images/bf16.png", width=400)
-    text("Google Brain developed bfloat (brain floating point) in 2018 to address this issue.")
-    text("bfloat16 uses the same memory as float16 but has the same dynamic range as float32!")
-    text("The only catch is that the resolution is worse, but this matters less for deep learning.")
+    text("Google Brain 在 2018 年开发了 bfloat（brain floating point）来解决这个问题。")
+    text("bfloat16 使用与 float16 相同的内存，但具有与 float32 相同的动态范围！")
+    text("唯一的问题是分辨率较差，但这对深度学习来说影响较小。")
     x = torch.tensor([1e-8], dtype=torch.bfloat16)  # @inspect x
-    assert x != 0  # No underflow!
+    assert x != 0  # 没有下溢！
 
-    text("Let's compare the dynamic ranges and memory usage of the different data types:")
+    text("让我们比较不同数据类型的动态范围和内存使用：")
     float32_info = torch.finfo(torch.float32)  # @inspect float32_info
     float16_info = torch.finfo(torch.float16)  # @inspect float16_info
     bfloat16_info = torch.finfo(torch.bfloat16)  # @inspect bfloat16_info
 
     text("## fp8")
-    text("In 2022, FP8 was standardized, motivated by machine learning workloads.")
+    text("2022 年，FP8 被标准化，由机器学习工作负载驱动。")
     link("https://docs.nvidia.com/deeplearning/transformer-engine/user-guide/examples/fp8_primer.html")
     image("https://docs.nvidia.com/deeplearning/transformer-engine/user-guide/_images/fp8_formats.png", width=400)
-    text("H100s support two variants of FP8: E4M3 (range [-448, 448]) and E5M2 ([-57344, 57344]).")
-    text("Reference: "), link("https://arxiv.org/pdf/2209.05433.pdf")
+    text("H100 支持两种 FP8 变体：E4M3（范围 [-448, 448]）和 E5M2（[-57344, 57344]）。")
+    text("参考："), link("https://arxiv.org/pdf/2209.05433.pdf")
 
-    text("Implications on training:")
-    text("- Training with float32 works, but requires lots of memory.")
-    text("- Training with fp8, float16 and even bfloat16 is risky, and you can get instability.")
-    text("- Solution (later): use mixed precision training, see "), link(mixed_precision_training)
+    text("对训练的影响：")
+    text("- 使用 float32 训练有效，但需要大量内存。")
+    text("- 使用 fp8、float16 甚至 bfloat16 训练有风险，可能会导致不稳定。")
+    text("- 解决方案（稍后）：使用混合精度训练，见 "), link(mixed_precision_training)
 
 
 def tensors_on_gpus():
-    text("By default, tensors are stored in CPU memory.")
+    text("默认情况下，tensors 存储在 CPU 内存中。")
     x = torch.zeros(32, 32)
     assert x.device == torch.device("cpu")
 
-    text("However, in order to take advantage of the massive parallelism of GPUs, we need to move them to GPU memory.")
+    text("然而，为了利用 GPU 的大规模并行性，我们需要将它们移动到 GPU 内存。")
     image("images/cpu-gpu.png", width=400)
 
-    text("Let's first see if we have any GPUs.")
+    text("让我们首先看看是否有任何 GPU。")
     if not torch.cuda.is_available():
         return
 
@@ -179,22 +179,22 @@ def tensors_on_gpus():
 
     memory_allocated = torch.cuda.memory_allocated()  # @inspect memory_allocated
 
-    text("Move the tensor to GPU memory (device 0).")
+    text("将 tensor 移动到 GPU 内存（设备 0）。")
     y = x.to("cuda:0")
     assert y.device == torch.device("cuda", 0)
 
-    text("Or create a tensor directly on the GPU:")
+    text("或者直接在 GPU 上创建 tensor：")
     z = torch.zeros(32, 32, device="cuda:0")
 
     new_memory_allocated = torch.cuda.memory_allocated()  # @inspect new_memory_allocated
     memory_used = new_memory_allocated - memory_allocated  # @inspect memory_used
-    assert memory_used == 2 * (32 * 32 * 4)  # 2 32x32 matrices of 4-byte floats
+    assert memory_used == 2 * (32 * 32 * 4)  # 2 个 32x32 的 4 字节 float 矩阵
 
 
 
 def tensor_operations():
-    text("Most tensors are created from performing operations on other tensors.")
-    text("Each operation has some memory and compute consequence.")
+    text("大多数 tensors 是通过对其他 tensors 执行操作创建的。")
+    text("每个操作都有一些内存和计算后果。")
 
     tensor_storage()
     tensor_slicing()
@@ -203,9 +203,9 @@ def tensor_operations():
 
 
 def tensor_storage():
-    text("What are tensors in PyTorch?")
-    text("PyTorch tensors are pointers into allocated memory")
-    text("...with metadata describing how to get to any element of the tensor.")
+    text("PyTorch 中的 tensors 是什么？")
+    text("PyTorch tensors 是指向已分配内存的指针")
+    text("...带有描述如何访问 tensor 任何元素的元数据。")
     image("https://martinlwx.github.io/img/2D_tensor_strides.png", width=400)
     link(title="[PyTorch docs]", url="https://pytorch.org/docs/stable/generated/torch.Tensor.stride.html")
     x = torch.tensor([
@@ -215,13 +215,13 @@ def tensor_storage():
         [12, 13, 14, 15],
     ])
 
-    text("To go to the next row (dim 0), skip 4 elements in storage.")
+    text("要到下一行（dim 0），在存储中跳过 4 个元素。")
     assert x.stride(0) == 4
 
-    text("To go to the next column (dim 1), skip 1 element in storage.")
+    text("要到下一列（dim 1），在存储中跳过 1 个元素。")
     assert x.stride(1) == 1
 
-    text("To find an element:")
+    text("查找一个元素：")
     r, c = 1, 2
     index = r * x.stride(0) + c * x.stride(1)  # @inspect index
     assert index == 6
@@ -230,34 +230,34 @@ def tensor_storage():
 def tensor_slicing():
     x = torch.tensor([[1., 2, 3], [4, 5, 6]])  # @inspect x
 
-    text("Many operations simply provide a different **view** of the tensor.")
-    text("This does not make a copy, and therefore mutations in one tensor affects the other.")
+    text("许多操作只是提供 tensor 的不同**视图**。")
+    text("这不会复制，因此对一个 tensor 的修改会影响另一个。")
 
-    text("Get row 0:")
+    text("获取第 0 行：")
     y = x[0]  # @inspect y
     assert torch.equal(y, torch.tensor([1., 2, 3]))
     assert same_storage(x, y)
 
-    text("Get column 1:")
+    text("获取第 1 列：")
     y = x[:, 1]  # @inspect y
     assert torch.equal(y, torch.tensor([2, 5]))
     assert same_storage(x, y)
 
-    text("View 2x3 matrix as 3x2 matrix:")
+    text("将 2x3 矩阵视为 3x2 矩阵：")
     y = x.view(3, 2)  # @inspect y
     assert torch.equal(y, torch.tensor([[1, 2], [3, 4], [5, 6]]))
     assert same_storage(x, y)
 
-    text("Transpose the matrix:")
+    text("转置矩阵：")
     y = x.transpose(1, 0)  # @inspect y
     assert torch.equal(y, torch.tensor([[1, 4], [2, 5], [3, 6]]))
     assert same_storage(x, y)
 
-    text("Check that mutating x also mutates y.")
+    text("检查修改 x 也会修改 y。")
     x[0][0] = 100  # @inspect x, @inspect y
     assert y[0][0] == 100
 
-    text("Note that some views are non-contiguous entries, which means that further views aren't possible.")
+    text("注意，某些视图是非连续条目，这意味着无法进一步创建视图。")
     x = torch.tensor([[1., 2, 3], [4, 5, 6]])  # @inspect x
     y = x.transpose(1, 0)  # @inspect y
     assert not y.is_contiguous()
@@ -267,15 +267,15 @@ def tensor_slicing():
     except RuntimeError as e:
         assert "view size is not compatible with input tensor's size and stride" in str(e)
 
-    text("One can enforce a tensor to be contiguous first:")
+    text("可以先强制 tensor 连续：")
     y = x.transpose(1, 0).contiguous().view(2, 3)  # @inspect y
     assert not same_storage(x, y)
-    text("Views are free, copying take both (additional) memory and compute.")
+    text("视图是免费的，复制需要（额外的）内存和计算。")
 
 
 def tensor_elementwise():
-    text("These operations apply some operation to each element of the tensor")
-    text("...and return a (new) tensor of the same shape.")
+    text("这些操作对 tensor 的每个元素应用某个操作")
+    text("...并返回相同形状的（新）tensor。")
 
     x = torch.tensor([1, 4, 9])
     assert torch.equal(x.pow(2), torch.tensor([1, 16, 81]))
@@ -286,37 +286,37 @@ def tensor_elementwise():
     assert torch.equal(x * 2, torch.tensor([2, 8, 18]))
     assert torch.equal(x / 0.5, torch.tensor([2, 8, 18]))
 
-    text("`triu` takes the upper triangular part of a matrix.")
+    text("`triu` 取矩阵的上三角部分。")
     x = torch.ones(3, 3).triu()  # @inspect x
     assert torch.equal(x, torch.tensor([
         [1, 1, 1],
         [0, 1, 1],
         [0, 0, 1]],
     ))
-    text("This is useful for computing an causal attention mask, where M[i, j] is the contribution of i to j.")
+    text("这对于计算 causal attention mask 很有用，其中 M[i, j] 是 i 对 j 的贡献。")
 
 
 def tensor_matmul():
-    text("Finally, the bread and butter of deep learning: matrix multiplication.")
+    text("最后，深度学习的核心：矩阵乘法。")
     x = torch.ones(16, 32)
     w = torch.ones(32, 2)
     y = x @ w
     assert y.size() == torch.Size([16, 2])
 
-    text("In general, we perform operations for every example in a batch and token in a sequence.")
+    text("通常，我们对 batch 中的每个样本和序列中的每个 token 执行操作。")
     image("images/batch-sequence.png", width=400)
     x = torch.ones(4, 8, 16, 32)
     w = torch.ones(32, 2)
     y = x @ w
     assert y.size() == torch.Size([4, 8, 16, 2])
-    text("In this case, we iterate over values of the first 2 dimensions of `x` and multiply by `w`.")
+    text("在这种情况下，我们遍历 `x` 的前 2 个维度的值并乘以 `w`。")
 
 
 def tensor_einops():
     einops_motivation()
 
-    text("Einops is a library for manipulating tensors where dimensions are named.")
-    text("It is inspired by Einstein summation notation (Einstein, 1916).")
+    text("Einops 是一个用于操作 tensors 的库，其中维度是命名的。")
+    text("它受到 Einstein 求和记号（Einstein, 1916）的启发。")
     link(title="[Einops tutorial]", url="https://einops.rocks/1-einops-basics/")
 
     jaxtyping_basics()
@@ -326,104 +326,104 @@ def tensor_einops():
     
 
 def einops_motivation():
-    text("Traditional PyTorch code:")
+    text("传统的 PyTorch 代码：")
     x = torch.ones(2, 2, 3)  # batch, sequence, hidden  @inspect x
     y = torch.ones(2, 2, 3)  # batch, sequence, hidden  @inspect y
     z = x @ y.transpose(-2, -1)  # batch, sequence, sequence  @inspect z
-    text("Easy to mess up the dimensions (what is -2, -1?)...")
+    text("容易搞混维度（-2, -1 是什么？）...")
 
 
 def jaxtyping_basics():
-    text("How do you keep track of tensor dimensions?")
+    text("如何跟踪 tensor 维度？")
 
-    text("Old way:")
+    text("旧方法：")
     x = torch.ones(2, 2, 1, 3)  # batch seq heads hidden  @inspect x
 
-    text("New (jaxtyping) way:")
+    text("新方法（jaxtyping）：")
     x: Float[torch.Tensor, "batch seq heads hidden"] = torch.ones(2, 2, 1, 3)  # @inspect x
-    text("Note: this is just documentation (no enforcement).")
+    text("注意：这只是文档（没有强制执行）。")
 
 
 def einops_einsum():
-    text("Einsum is generalized matrix multiplication with good bookkeeping.")
+    text("Einsum 是具有良好记录的广义矩阵乘法。")
 
-    text("Define two tensors:")
+    text("定义两个 tensors：")
     x: Float[torch.Tensor, "batch seq1 hidden"] = torch.ones(2, 3, 4)  # @inspect x
     y: Float[torch.Tensor, "batch seq2 hidden"] = torch.ones(2, 3, 4)  # @inspect y
 
-    text("Old way:")
+    text("旧方法：")
     z = x @ y.transpose(-2, -1)  # batch, sequence, sequence  @inspect z
 
-    text("New (einops) way:")
+    text("新方法（einops）：")
     z = einsum(x, y, "batch seq1 hidden, batch seq2 hidden -> batch seq1 seq2")  # @inspect z
-    text("Dimensions that are not named in the output are summed over.")
+    text("输出中未命名的维度将被求和。")
 
-    text("Or can use `...` to represent broadcasting over any number of dimensions:")
+    text("或者可以使用 `...` 表示在任意数量的维度上广播：")
     z = einsum(x, y, "... seq1 hidden, ... seq2 hidden -> ... seq1 seq2")  # @inspect z
 
 
 def einops_reduce():
-    text("You can reduce a single tensor via some operation (e.g., sum, mean, max, min).")
+    text("你可以通过某个操作（例如 sum、mean、max、min）对单个 tensor 进行归约。")
     x: Float[torch.Tensor, "batch seq hidden"] = torch.ones(2, 3, 4)  # @inspect x
 
-    text("Old way:")
+    text("旧方法：")
     y = x.sum(dim=-1)  # @inspect y
 
-    text("New (einops) way:")
+    text("新方法（einops）：")
     y = reduce(x, "... hidden -> ...", "sum")  # @inspect y
 
 
 def einops_rearrange():
-    text("Sometimes, a dimension represents two dimensions")
-    text("...and you want to operate on one of them.")
+    text("有时，一个维度代表两个维度")
+    text("...而你想对其中一个进行操作。")
 
     x: Float[torch.Tensor, "batch seq total_hidden"] = torch.ones(2, 3, 8)  # @inspect x
-    text("...where `total_hidden` is a flattened representation of `heads * hidden1`")
+    text("...其中 `total_hidden` 是 `heads * hidden1` 的扁平化表示")
     w: Float[torch.Tensor, "hidden1 hidden2"] = torch.ones(4, 4)
 
-    text("Break up `total_hidden` into two dimensions (`heads` and `hidden1`):")
+    text("将 `total_hidden` 分解为两个维度（`heads` 和 `hidden1`）：")
     x = rearrange(x, "... (heads hidden1) -> ... heads hidden1", heads=2)  # @inspect x
 
-    text("Perform the transformation by `w`:")
+    text("通过 `w` 执行转换：")
     x = einsum(x, w, "... hidden1, hidden1 hidden2 -> ... hidden2")  # @inspect x
 
-    text("Combine `heads` and `hidden2` back together:")
+    text("将 `heads` 和 `hidden2` 重新组合：")
     x = rearrange(x, "... heads hidden2 -> ... (heads hidden2)")  # @inspect x
 
 
 def tensor_operations_flops():
-    text("Having gone through all the operations, let us examine their computational cost.")
+    text("在了解了所有操作之后，让我们检查它们的计算成本。")
 
-    text("A floating-point operation (FLOP) is a basic operation like addition (x + y) or multiplication (x y).")
+    text("浮点运算（FLOP）是一个基本操作，如加法（x + y）或乘法（x y）。")
 
-    text("Two terribly confusing acronyms (pronounced the same!):")
-    text("- FLOPs: floating-point operations (measure of computation done)")
-    text("- FLOP/s: floating-point operations per second (also written as FLOPS), which is used to measure the speed of hardware.")
+    text("两个非常容易混淆的缩写（发音相同！）：")
+    text("- FLOPs：浮点运算（计算量的度量）")
+    text("- FLOP/s：每秒浮点运算（也写作 FLOPS），用于衡量硬件速度。")
 
-    text("## Intuitions")
-    text("Training GPT-3 (2020) took 3.14e23 FLOPs. "), article_link("https://lambdalabs.com/blog/demystifying-gpt-3")
-    text("Training GPT-4 (2023) is speculated to take 2e25 FLOPs "), article_link("https://patmcguinness.substack.com/p/gpt-4-details-revealed")
-    text("US executive order: any foundation model trained with >= 1e26 FLOPs must be reported to the government (revoked in 2025)")
+    text("## 直觉")
+    text("训练 GPT-3（2020）需要 3.14e23 FLOPs。"), article_link("https://lambdalabs.com/blog/demystifying-gpt-3")
+    text("训练 GPT-4（2023）据推测需要 2e25 FLOPs "), article_link("https://patmcguinness.substack.com/p/gpt-4-details-revealed")
+    text("美国行政命令：任何使用 >= 1e26 FLOPs 训练的基础模型必须向政府报告（2025 年撤销）")
 
-    text("A100 has a peak performance of 312 teraFLOP/s "), link(title="[spec]", url="https://www.nvidia.com/content/dam/en-zz/Solutions/Data-Center/a100/pdf/nvidia-a100-datasheet-us-nvidia-1758950-r4-web.pdf")
+    text("A100 的峰值性能为 312 teraFLOP/s "), link(title="[spec]", url="https://www.nvidia.com/content/dam/en-zz/Solutions/Data-Center/a100/pdf/nvidia-a100-datasheet-us-nvidia-1758950-r4-web.pdf")
     assert a100_flop_per_sec == 312e12
 
-    text("H100 has a peak performance of 1979 teraFLOP/s with sparsity, 50% without "), link(title="[spec]", url="https://resources.nvidia.com/en-us-tensor-core/nvidia-tensor-core-gpu-datasheet")
+    text("H100 的峰值性能为 1979 teraFLOP/s（带稀疏性），不带稀疏性为 50% "), link(title="[spec]", url="https://resources.nvidia.com/en-us-tensor-core/nvidia-tensor-core-gpu-datasheet")
     assert h100_flop_per_sec == 1979e12 / 2
 
-    text("8 H100s for 2 weeks:")
+    text("8 个 H100 运行 2 周：")
     total_flops = 8 * (60 * 60 * 24 * 7) * h100_flop_per_sec  # @inspect total_flops
 
-    text("## Linear model")
-    text("As motivation, suppose you have a linear model.")
-    text("- We have n points")
-    text("- Each point is d-dimsional")
-    text("- The linear model maps each d-dimensional vector to a k outputs")
+    text("## 线性模型")
+    text("作为动机，假设你有一个线性模型。")
+    text("- 我们有 n 个点")
+    text("- 每个点是 d 维的")
+    text("- 线性模型将每个 d 维向量映射到 k 个输出")
 
     if torch.cuda.is_available():
-        B = 16384  # Number of points
-        D = 32768  # Dimension
-        K = 8192   # Number of outputs
+        B = 16384  # 点的数量
+        D = 32768  # 维度
+        K = 8192   # 输出数量
     else:
         B = 1024
         D = 256
@@ -433,67 +433,67 @@ def tensor_operations_flops():
     x = torch.ones(B, D, device=device)
     w = torch.randn(D, K, device=device)
     y = x @ w
-    text("We have one multiplication (x[i][j] * w[j][k]) and one addition per (i, j, k) triple.")
+    text("对于每个 (i, j, k) 三元组，我们有一次乘法（x[i][j] * w[j][k]）和一次加法。")
     actual_num_flops = 2 * B * D * K  # @inspect actual_num_flops
 
-    text("## FLOPs of other operations")
-    text("- Elementwise operation on a m x n matrix requires O(m n) FLOPs.")
-    text("- Addition of two m x n matrices requires m n FLOPs.")
-    text("In general, no other operation that you'd encounter in deep learning is as expensive as matrix multiplication for large enough matrices.")
+    text("## 其他操作的 FLOPs")
+    text("- 对 m x n 矩阵的逐元素操作需要 O(m n) FLOPs。")
+    text("- 两个 m x n 矩阵的加法需要 m n FLOPs。")
+    text("一般来说，在深度学习中，对于足够大的矩阵，没有其他操作比矩阵乘法更昂贵。")
 
-    text("Interpretation:")
-    text("- B is the number of data points")
-    text("- (D K) is the number of parameters")
-    text("- FLOPs for forward pass is 2 (# tokens) (# parameters)")
-    text("It turns out this generalizes to Transformers (to a first-order approximation).")
+    text("解释：")
+    text("- B 是数据点的数量")
+    text("- (D K) 是参数的数量")
+    text("- 前向传播的 FLOPs 是 2 (# tokens) (# parameters)")
+    text("事实证明，这推广到 Transformers（一阶近似）。")
 
-    text("How do our FLOPs calculations translate to wall-clock time (seconds)?")
-    text("Let us time it!")
+    text("我们的 FLOPs 计算如何转换为实际时间（秒）？")
+    text("让我们计时！")
     actual_time = time_matmul(x, w)  # @inspect actual_time
     actual_flop_per_sec = actual_num_flops / actual_time  # @inspect actual_flop_per_sec
 
-    text("Each GPU has a specification sheet that reports the peak performance.")
+    text("每个 GPU 都有一个规格表，报告峰值性能。")
     text("- A100 "), link(title="[spec]", url="https://www.nvidia.com/content/dam/en-zz/Solutions/Data-Center/a100/pdf/nvidia-a100-datasheet-us-nvidia-1758950-r4-web.pdf")
     text("- H100 "), link(title="[spec]", url="https://resources.nvidia.com/en-us-tensor-core/nvidia-tensor-core-gpu-datasheet")
-    text("Note that the FLOP/s depends heavily on the data type!")
+    text("注意，FLOP/s 在很大程度上取决于数据类型！")
     promised_flop_per_sec = get_promised_flop_per_sec(device, x.dtype)  # @inspect promised_flop_per_sec
 
     text("## Model FLOPs utilization (MFU)")
 
-    text("Definition: (actual FLOP/s) / (promised FLOP/s) [ignore communication/overhead]")
+    text("定义：(实际 FLOP/s) / (承诺 FLOP/s) [忽略通信/开销]")
     mfu = actual_flop_per_sec / promised_flop_per_sec  # @inspect mfu
-    text("Usually, MFU of >= 0.5 is quite good (and will be higher if matmuls dominate)")
+    text("通常，MFU >= 0.5 是相当好的（如果矩阵乘法占主导地位，会更高）")
 
-    text("Let's do it with bfloat16:")
+    text("让我们用 bfloat16 试试：")
     x = x.to(torch.bfloat16)
     w = w.to(torch.bfloat16)
     bf16_actual_time = time_matmul(x, w)  # @inspect bf16_actual_time
     bf16_actual_flop_per_sec = actual_num_flops / bf16_actual_time  # @inspect bf16_actual_flop_per_sec
     bf16_promised_flop_per_sec = get_promised_flop_per_sec(device, x.dtype)  # @inspect bf16_promised_flop_per_sec
     bf16_mfu = bf16_actual_flop_per_sec / bf16_promised_flop_per_sec  # @inspect bf16_mfu
-    text("Note: comparing bfloat16 to float32, the actual FLOP/s is higher.")
-    text("The MFU here is rather low, probably because the promised FLOPs is a bit optimistic.")
+    text("注意：将 bfloat16 与 float32 比较，实际 FLOP/s 更高。")
+    text("这里的 MFU 相当低，可能是因为承诺的 FLOPs 有点乐观。")
 
-    text("## Summary")
-    text("- Matrix multiplications dominate: (2 m n p) FLOPs")
-    text("- FLOP/s depends on hardware (H100 >> A100) and data type (bfloat16 >> float32)")
-    text("- Model FLOPs utilization (MFU): (actual FLOP/s) / (promised FLOP/s)")
+    text("## 总结")
+    text("- 矩阵乘法占主导地位：(2 m n p) FLOPs")
+    text("- FLOP/s 取决于硬件（H100 >> A100）和数据类型（bfloat16 >> float32）")
+    text("- Model FLOPs utilization (MFU)：(实际 FLOP/s) / (承诺 FLOP/s)")
 
 
 def gradients_basics():
-    text("So far, we've constructed tensors (which correspond to either parameters or data) and passed them through operations (forward).")
-    text("Now, we're going to compute the gradient (backward).")
+    text("到目前为止，我们已经构建了 tensors（对应于参数或数据）并通过操作传递它们（前向）。")
+    text("现在，我们将计算梯度（反向）。")
 
-    text("As a simple example, let's consider the simple linear model:")
+    text("作为一个简单的例子，让我们考虑简单的线性模型：")
     text("y = 0.5 (x * w - 5)^2")
 
-    text("Forward pass: compute loss")
+    text("前向传播：计算损失")
     x = torch.tensor([1., 2, 3])
-    w = torch.tensor([1., 1, 1], requires_grad=True)  # Want gradient
+    w = torch.tensor([1., 1, 1], requires_grad=True)  # 需要梯度
     pred_y = x @ w
     loss = 0.5 * (pred_y - 5).pow(2)
 
-    text("Backward pass: compute gradients")
+    text("反向传播：计算梯度")
     loss.backward()
     assert loss.grad is None
     assert pred_y.grad is None
@@ -502,13 +502,13 @@ def gradients_basics():
 
 
 def gradients_flops():
-    text("Let us do count the FLOPs for computing gradients.")
+    text("让我们计算计算梯度的 FLOPs。")
 
-    text("Revisit our linear model")
+    text("重新审视我们的线性模型")
     if torch.cuda.is_available():
-        B = 16384  # Number of points
-        D = 32768  # Dimension
-        K = 8192   # Number of outputs
+        B = 16384  # 点的数量
+        D = 32768  # 维度
+        K = 8192   # 输出数量
     else:
         B = 1024
         D = 256
@@ -519,32 +519,32 @@ def gradients_flops():
     w1 = torch.randn(D, D, device=device, requires_grad=True)
     w2 = torch.randn(D, K, device=device, requires_grad=True)
 
-    text("Model: x --w1--> h1 --w2--> h2 -> loss")
+    text("模型：x --w1--> h1 --w2--> h2 -> loss")
     h1 = x @ w1
     h2 = h1 @ w2
     loss = h2.pow(2).mean()
 
-    text("Recall the number of forward FLOPs: "), link(tensor_operations_flops)
-    text("- Multiply x[i][j] * w1[j][k]")
-    text("- Add to h1[i][k]")
-    text("- Multiply h1[i][j] * w2[j][k]")
-    text("- Add to h2[i][k]")
+    text("回顾前向 FLOPs 的数量："), link(tensor_operations_flops)
+    text("- 乘法 x[i][j] * w1[j][k]")
+    text("- 加到 h1[i][k]")
+    text("- 乘法 h1[i][j] * w2[j][k]")
+    text("- 加到 h2[i][k]")
     num_forward_flops = (2 * B * D * D) + (2 * B * D * K)  # @inspect num_forward_flops
 
-    text("How many FLOPs is running the backward pass?")
-    h1.retain_grad()  # For debugging
-    h2.retain_grad()  # For debugging
+    text("运行反向传播需要多少 FLOPs？")
+    h1.retain_grad()  # 用于调试
+    h2.retain_grad()  # 用于调试
     loss.backward()
 
-    text("Recall model: x --w1--> h1 --w2--> h2 -> loss")
+    text("回顾模型：x --w1--> h1 --w2--> h2 -> loss")
 
     text("- h1.grad = d loss / d h1")
     text("- h2.grad = d loss / d h2")
     text("- w1.grad = d loss / d w1")
     text("- w2.grad = d loss / d w2")
 
-    text("Focus on the parameter w2.")
-    text("Invoke the chain rule.")
+    text("关注参数 w2。")
+    text("调用链式法则。")
 
     num_backward_flops = 0  # @inspect num_backward_flops
 
@@ -552,63 +552,63 @@ def gradients_flops():
     assert w2.grad.size() == torch.Size([D, K])
     assert h1.size() == torch.Size([B, D])
     assert h2.grad.size() == torch.Size([B, K])
-    text("For each (i, j, k), multiply and add.")
+    text("对于每个 (i, j, k)，乘法和加法。")
     num_backward_flops += 2 * B * D * K  # @inspect num_backward_flops
 
     text("h1.grad[i,j] = sum_k w2[j,k] * h2.grad[i,k]")
     assert h1.grad.size() == torch.Size([B, D])
     assert w2.size() == torch.Size([D, K])
     assert h2.grad.size() == torch.Size([B, K])
-    text("For each (i, j, k), multiply and add.")
+    text("对于每个 (i, j, k)，乘法和加法。")
     num_backward_flops += 2 * B * D * K  # @inspect num_backward_flops
 
-    text("This was for just w2 (D*K parameters).")
-    text("Can do it for w1 (D*D parameters) as well (though don't need x.grad).")
+    text("这只是针对 w2（D*K 参数）。")
+    text("也可以对 w1（D*D 参数）执行相同操作（尽管不需要 x.grad）。")
     num_backward_flops += (2 + 2) * B * D * D  # @inspect num_backward_flops
 
-    text("A nice graphical visualization: "), article_link("https://medium.com/@dzmitrybahdanau/the-flops-calculus-of-language-model-training-3b19c1f025e4")
+    text("一个很好的图形可视化："), article_link("https://medium.com/@dzmitrybahdanau/the-flops-calculus-of-language-model-training-3b19c1f025e4")
     image("https://miro.medium.com/v2/resize:fit:1400/format:webp/1*VC9y_dHhCKFPXj90Qshj3w.gif", width=500)
 
-    text("Putting it togther:")
-    text("- Forward pass: 2 (# data points) (# parameters) FLOPs")
-    text("- Backward pass: 4 (# data points) (# parameters) FLOPs")
-    text("- Total: 6 (# data points) (# parameters) FLOPs")
+    text("综合起来：")
+    text("- 前向传播：2 (# 数据点) (# 参数) FLOPs")
+    text("- 反向传播：4 (# 数据点) (# 参数) FLOPs")
+    text("- 总计：6 (# 数据点) (# 参数) FLOPs")
 
 
 def module_parameters():
     input_dim = 16384
     output_dim = 32
 
-    text("Model parameters are stored in PyTorch as `nn.Parameter` objects.")
+    text("模型参数在 PyTorch 中存储为 `nn.Parameter` 对象。")
     w = nn.Parameter(torch.randn(input_dim, output_dim))
-    assert isinstance(w, torch.Tensor)  # Behaves like a tensor
-    assert type(w.data) == torch.Tensor  # Access the underlying tensor
+    assert isinstance(w, torch.Tensor)  # 行为像 tensor
+    assert type(w.data) == torch.Tensor  # 访问底层 tensor
 
-    text("## Parameter initialization")
+    text("## 参数初始化")
 
-    text("Let's see what happens.")
+    text("让我们看看会发生什么。")
     x = nn.Parameter(torch.randn(input_dim))
     output = x @ w  # @inspect output
     assert output.size() == torch.Size([output_dim])
-    text(f"Note that each element of `output` scales as sqrt(input_dim): {output[0]}.")
-    text("Large values can cause gradients to blow up and cause training to be unstable.")
+    text(f"注意 `output` 的每个元素按 sqrt(input_dim) 缩放：{output[0]}。")
+    text("大值可能导致梯度爆炸并导致训练不稳定。")
 
-    text("We want an initialization that is invariant to `input_dim`.")
-    text("To do that, we simply rescale by 1/sqrt(input_dim)")
+    text("我们想要一个对 `input_dim` 不变的初始化。")
+    text("为此，我们简单地按 1/sqrt(input_dim) 重新缩放")
     w = nn.Parameter(torch.randn(input_dim, output_dim) / np.sqrt(input_dim))
     output = x @ w  # @inspect output
-    text(f"Now each element of `output` is constant: {output[0]}.")
+    text(f"现在 `output` 的每个元素是常数：{output[0]}。")
 
-    text("Up to a constant, this is Xavier initialization. "), link(title="[paper]", url="https://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf"), link(title="[stackexchange]", url="https://ai.stackexchange.com/questions/30491/is-there-a-proper-initialization-technique-for-the-weight-matrices-in-multi-head")
+    text("除了一个常数，这就是 Xavier 初始化。"), link(title="[paper]", url="https://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf"), link(title="[stackexchange]", url="https://ai.stackexchange.com/questions/30491/is-there-a-proper-initialization-technique-for-the-weight-matrices-in-multi-head")
 
-    text("To be extra safe, we truncate the normal distribution to [-3, 3] to avoid any chance of outliers.")
+    text("为了更安全，我们将正态分布截断到 [-3, 3] 以避免任何异常值的可能性。")
     w = nn.Parameter(nn.init.trunc_normal_(torch.empty(input_dim, output_dim), std=1 / np.sqrt(input_dim), a=-3, b=3))
 
 
 def custom_model():
-    text("Let's build up a simple deep linear model using `nn.Parameter`.")
+    text("让我们使用 `nn.Parameter` 构建一个简单的深度线性模型。")
 
-    D = 64  # Dimension
+    D = 64  # 维度
     num_layers = 2
     model = Cruncher(dim=D, num_layers=num_layers)
 
@@ -624,11 +624,11 @@ def custom_model():
     num_parameters = get_num_parameters(model)
     assert num_parameters == (D * D) + (D * D) + D
 
-    text("Remember to move the model to the GPU.")
+    text("记得将模型移动到 GPU。")
     device = get_device()
     model = model.to(device)
 
-    text("Run the model on some data.")
+    text("在一些数据上运行模型。")
     B = 8  # Batch size
     x = torch.randn(B, D, device=device)
     y = model(x)
@@ -636,7 +636,7 @@ def custom_model():
 
 
 class Linear(nn.Module):
-    """Simple linear layer."""
+    """简单的线性层。"""
     def __init__(self, input_dim: int, output_dim: int):
         super().__init__()
         self.weight = nn.Parameter(torch.randn(input_dim, output_dim) / np.sqrt(input_dim))
@@ -655,16 +655,16 @@ class Cruncher(nn.Module):
         self.final = Linear(dim, 1)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # Apply linear layers
+        # 应用线性层
         B, D = x.size()
         for layer in self.layers:
             x = layer(x)
 
-        # Apply final head
+        # 应用最终头
         x = self.final(x)
         assert x.size() == torch.Size([B, 1])
 
-        # Remove the last dimension
+        # 移除最后一个维度
         x = x.squeeze(-1)
         assert x.size() == torch.Size([B])
 
@@ -672,26 +672,26 @@ class Cruncher(nn.Module):
 
 
 def get_batch(data: np.array, batch_size: int, sequence_length: int, device: str) -> torch.Tensor:
-    text("Sample `batch_size` random positions into `data`.")
+    text("从 `data` 中随机采样 `batch_size` 个位置。")
     start_indices = torch.randint(len(data) - sequence_length, (batch_size,))
     assert start_indices.size() == torch.Size([batch_size])
 
-    text("Index into the data.")
+    text("索引到数据中。")
     x = torch.tensor([data[start:start + sequence_length] for start in start_indices])
     assert x.size() == torch.Size([batch_size, sequence_length])
 
     text("## Pinned memory")
 
-    text("By default, CPU tensors are in paged memory. We can explicitly pin.")
+    text("默认情况下，CPU tensors 在分页内存中。我们可以显式固定。")
     if torch.cuda.is_available():
         x = x.pin_memory()
 
-    text("This allows us to copy `x` from CPU into GPU asynchronously.")
+    text("这允许我们异步地将 `x` 从 CPU 复制到 GPU。")
     x = x.to(device, non_blocking=True)
 
-    text("This allows us to do two things in parallel (not done here):")
-    text("- Fetch the next batch of data into CPU")
-    text("- Process `x` on the GPU.")
+    text("这允许我们并行做两件事（这里没有做）：")
+    text("- 将下一批数据提取到 CPU")
+    text("- 在 GPU 上处理 `x`。")
 
     article_link("https://developer.nvidia.com/blog/how-optimize-data-transfers-cuda-cc/")
     article_link("https://gist.github.com/ZijiaLewisLu/eabdca955110833c0ce984d34eb7ff39?permalink_comment_id=3417135")
@@ -700,11 +700,11 @@ def get_batch(data: np.array, batch_size: int, sequence_length: int, device: str
 
 
 def note_about_randomness():
-    text("Randomness shows up in many places: parameter initialization, dropout, data ordering, etc.")
-    text("For reproducibility, we recommend you always pass in a different random seed for each use of randomness.")
-    text("Determinism is particularly useful when debugging, so you can hunt down the bug.")
+    text("随机性出现在许多地方：参数初始化、dropout、数据排序等。")
+    text("为了可重现性，我们建议你在每次使用随机性时总是传入不同的随机种子。")
+    text("确定性在调试时特别有用，这样你就可以追踪 bug。")
 
-    text("There are three places to set the random seed which you should do all at once just to be safe.")
+    text("有三个地方需要设置随机种子，为了安全起见，你应该一次性完成。")
 
     # Torch
     seed = 0
@@ -720,21 +720,21 @@ def note_about_randomness():
 
 
 def data_loading():
-    text("In language modeling, data is a sequence of integers (output by the tokenizer).")
+    text("在语言建模中，数据是一个整数序列（由 tokenizer 输出）。")
 
-    text("It is convenient to serialize them as numpy arrays (done by the tokenizer).")
+    text("将它们序列化为 numpy 数组很方便（由 tokenizer 完成）。")
     orig_data = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], dtype=np.int32)
     orig_data.tofile("data.npy")
 
-    text("You can load them back as numpy arrays.")
-    text("Don't want to load the entire data into memory at once (LLaMA data is 2.8TB).")
-    text("Use memmap to lazily load only the accessed parts into memory.")
+    text("你可以将它们作为 numpy 数组加载回来。")
+    text("不想一次将整个数据加载到内存中（LLaMA 数据是 2.8TB）。")
+    text("使用 memmap 懒加载，只将访问的部分加载到内存中。")
     data = np.memmap("data.npy", dtype=np.int32)
     assert np.array_equal(data, orig_data)
 
-    text("A *data loader* generates a batch of sequences for training.")
+    text("*data loader* 生成用于训练的批次序列。")
     B = 2  # Batch size
-    L = 4  # Length of sequence
+    L = 4  # 序列长度
     x = get_batch(data, batch_size=B, sequence_length=L, device=get_device())
     assert x.size() == torch.Size([B, L])
 
@@ -763,80 +763,80 @@ class AdaGrad(torch.optim.Optimizer):
                 state = self.state[p]
                 grad = p.grad.data
 
-                # Get squared gradients g2 = sum_{i<t} g_i^2
+                # 获取平方梯度 g2 = sum_{i<t} g_i^2
                 g2 = state.get("g2", torch.zeros_like(grad))
 
-                # Update optimizer state
+                # 更新 optimizer state
                 g2 += torch.square(grad)
                 state["g2"] = g2
 
-                # Update parameters
+                # 更新参数
                 p.data -= lr * grad / torch.sqrt(g2 + 1e-5)
 
 
 def optimizer():
-    text("Recall our deep linear model.")
+    text("回顾我们的深度线性模型。")
     B = 2
     D = 4
     num_layers = 2
     model = Cruncher(dim=D, num_layers=num_layers).to(get_device())
 
-    text("Let's define the AdaGrad optimizer")
-    text("- momentum = SGD + exponential averaging of grad")
-    text("- AdaGrad = SGD + averaging by grad^2")
-    text("- RMSProp = AdaGrad + exponentially averaging of grad^2")
+    text("让我们定义 AdaGrad optimizer")
+    text("- momentum = SGD + 梯度的指数平均")
+    text("- AdaGrad = SGD + 通过 grad^2 平均")
+    text("- RMSProp = AdaGrad + grad^2 的指数平均")
     text("- Adam = RMSProp + momentum")
 
     text("AdaGrad: "), link("https://www.jmlr.org/papers/volume12/duchi11a/duchi11a.pdf")
     optimizer = AdaGrad(model.parameters(), lr=0.01)
     state = model.state_dict()  # @inspect state
 
-    text("Compute gradients")
+    text("计算梯度")
     x = torch.randn(B, D, device=get_device())
     y = torch.tensor([4., 5.], device=get_device())
     pred_y = model(x)
     loss = F.mse_loss(input=pred_y, target=y)
     loss.backward()
 
-    text("Take a step")
+    text("执行一步")
     optimizer.step()
     state = model.state_dict()  # @inspect state
 
-    text("Free up the memory (optional)")
+    text("释放内存（可选）")
     optimizer.zero_grad(set_to_none=True)
 
-    text("## Memory")
+    text("## 内存")
 
-    # Parameters
+    # 参数
     num_parameters = (D * D * num_layers) + D  # @inspect num_parameters
     assert num_parameters == get_num_parameters(model)
 
-    # Activations
+    # 激活值
     num_activations = B * D * num_layers  # @inspect num_activations
 
-    # Gradients
+    # 梯度
     num_gradients = num_parameters  # @inspect num_gradients
 
     # Optimizer states
     num_optimizer_states = num_parameters  # @inspect num_optimizer_states
 
-    # Putting it all together, assuming float32
+    # 综合起来，假设 float32
     total_memory = 4 * (num_parameters + num_activations + num_gradients + num_optimizer_states)  # @inspect total_memory
 
-    text("## Compute (for one step)")
+    text("## 计算（一步）")
     flops = 6 * B * num_parameters  # @inspect flops
 
     text("## Transformers")
 
-    text("The accounting for a Transformer is more complicated, but the same idea.")
-    text("Assignment 1 will ask you to do that.")
+    text("Transformer 的核算更复杂，但思路相同。")
+    text("作业 1 会要求你做这个。")
 
-    text("Blog post describing memory usage for Transformer training "), article_link("https://erees.dev/transformer-memory/")
-    text("Blog post descibing FLOPs for a Transformer: "), article_link("https://www.adamcasson.com/posts/transformer-flops")
+    text("描述 Transformer 训练内存使用的博客文章 "), article_link("https://erees.dev/transformer-memory/")
+    text("描述 Transformer FLOPs 的博客文章："), article_link("https://www.adamcasson.com/posts/transformer-flops")
 
 
 def train_loop():
-    text("Generate data from linear function with weights (0, 1, 2, ..., D-1).")
+    text("从权重为 (0, 1, 2, ..., D-1) 的线性函数生成数据。")
     D = 16
     true_w = torch.arange(D, dtype=torch.float32, device=get_device())
     def get_batch(B: int) -> tuple[torch.Tensor, torch.Tensor]:
@@ -844,10 +844,10 @@ def train_loop():
         true_y = x @ true_w
         return (x, true_y)
 
-    text("Let's do a basic run")
+    text("让我们做一个基本运行")
     train("simple", get_batch, D=D, num_layers=0, B=4, num_train_steps=10, lr=0.01)
 
-    text("Do some hyperparameter tuning")
+    text("做一些超参数调优")
     train("simple", get_batch, D=D, num_layers=0, B=4, num_train_steps=10, lr=0.1)
 
 
@@ -858,62 +858,62 @@ def train(name: str, get_batch,
     optimizer = SGD(model.parameters(), lr=0.01)
 
     for t in range(num_train_steps):
-        # Get data
+        # 获取数据
         x, y = get_batch(B=B)
 
-        # Forward (compute loss)
+        # 前向（计算损失）
         pred_y = model(x)
         loss = F.mse_loss(pred_y, y)
 
-        # Backward (compute gradients)
+        # 反向（计算梯度）
         loss.backward()
 
-        # Update parameters
+        # 更新参数
         optimizer.step()
         optimizer.zero_grad(set_to_none=True)
 
 
 def checkpointing():
-    text("Training language models take a long time and certainly will certainly crash.")
-    text("You don't want to lose all your progress.")
+    text("训练语言模型需要很长时间，肯定会崩溃。")
+    text("你不想失去所有进度。")
 
-    text("During training, it is useful to periodically save your model and optimizer state to disk.")
+    text("在训练期间，定期将模型和 optimizer state 保存到磁盘是有用的。")
 
     model = Cruncher(dim=64, num_layers=3).to(get_device())
     optimizer = AdaGrad(model.parameters(), lr=0.01)
 
-    text("Save the checkpoint:")
+    text("保存 checkpoint：")
     checkpoint = {
         "model": model.state_dict(),
         "optimizer": optimizer.state_dict(),
     }
     torch.save(checkpoint, "model_checkpoint.pt")
 
-    text("Load the checkpoint:")
+    text("加载 checkpoint：")
     loaded_checkpoint = torch.load("model_checkpoint.pt")
 
 
 def mixed_precision_training():
-    text("Choice of data type (float32, bfloat16, fp8) have tradeoffs.")
-    text("- Higher precision: more accurate/stable, more memory, more compute")
-    text("- Lower precision: less accurate/stable, less memory, less compute")
+    text("数据类型的选择（float32、bfloat16、fp8）有权衡。")
+    text("- 更高精度：更准确/稳定，更多内存，更多计算")
+    text("- 更低精度：更不准确/稳定，更少内存，更少计算")
 
-    text("How can we get the best of both worlds?")
+    text("我们如何兼得两者的优点？")
 
-    text("Solution: use float32 by default, but use {bfloat16, fp8} when possible.")
+    text("解决方案：默认使用 float32，但在可能的情况下使用 {bfloat16, fp8}。")
 
-    text("A concrete plan:")
-    text("- Use {bfloat16, fp8} for the forward pass (activations).")
-    text("- Use float32 for the rest (parameters, gradients).")
+    text("一个具体的计划：")
+    text("- 对前向传播（激活值）使用 {bfloat16, fp8}。")
+    text("- 对其余部分（参数、梯度）使用 float32。")
 
     text("- Mixed precision training "), link("https://arxiv.org/pdf/1710.03740.pdf")
 
-    text("Pytorch has an automatic mixed precision (AMP) library.")
+    text("Pytorch 有一个自动混合精度（AMP）库。")
     link("https://pytorch.org/docs/stable/amp.html")
     link("https://docs.nvidia.com/deeplearning/performance/mixed-precision-training/")
 
-    text("NVIDIA's Transformer Engine supports FP8 for linear layers")
-    text("Use FP8 pervasively throughout training "), link("https://arxiv.org/pdf/2310.18313.pdf")
+    text("NVIDIA 的 Transformer Engine 支持线性层的 FP8")
+    text("在整个训练过程中广泛使用 FP8 "), link("https://arxiv.org/pdf/2310.18313.pdf")
 
 
 ############################################################
@@ -923,9 +923,9 @@ def get_memory_usage(x: torch.Tensor):
 
 
 def get_promised_flop_per_sec(device: str, dtype: torch.dtype) -> float:
-    """Return the peak FLOP/s for `device` operating on `dtype`."""
+    """返回 `device` 在 `dtype` 上操作的峰值 FLOP/s。"""
     if not torch.cuda.is_available():
-        text("No CUDA device available, so can't get FLOP/s.")
+        text("没有可用的 CUDA 设备，所以无法获取 FLOP/s。")
         return 1
     properties = torch.cuda.get_device_properties(device)
 
@@ -942,7 +942,7 @@ def get_promised_flop_per_sec(device: str, dtype: torch.dtype) -> float:
         if dtype == torch.float32:
             return 67.5e12
         if dtype in (torch.bfloat16, torch.float16):
-            return 1979e12 / 2  # 1979 is for sparse, dense is half of that
+            return 1979e12 / 2  # 1979 是稀疏的，密集的是其一半
         raise ValueError(f"Unknown dtype: {dtype}")
 
     raise ValueError(f"Unknown device: {device}")
@@ -953,21 +953,21 @@ def same_storage(x: torch.Tensor, y: torch.Tensor):
 
 
 def time_matmul(a: torch.Tensor, b: torch.Tensor) -> float:
-    """Return the number of seconds required to perform `a @ b`."""
+    """返回执行 `a @ b` 所需的秒数。"""
 
-    # Wait until previous CUDA threads are done
+    # 等待之前的 CUDA 线程完成
     if torch.cuda.is_available():
         torch.cuda.synchronize()
 
     def run():
-        # Perform the operation
+        # 执行操作
         a @ b
 
-        # Wait until CUDA threads are done
+        # 等待 CUDA 线程完成
         if torch.cuda.is_available():
             torch.cuda.synchronize()
 
-    # Time the operation `num_trials` times
+    # 计时操作 `num_trials` 次
     num_trials = 5
     total_time = timeit.timeit(run, number=num_trials)
 
@@ -978,7 +978,7 @@ def get_num_parameters(model: nn.Module) -> int:
     return sum(param.numel() for param in model.parameters())
 
 def get_device(index: int = 0) -> torch.device:
-    """Try to use the GPU if possible, otherwise, use CPU."""
+    """如果可能，尝试使用 GPU，否则使用 CPU。"""
     if torch.cuda.is_available():
         return torch.device(f"cuda:{index}")
     else:

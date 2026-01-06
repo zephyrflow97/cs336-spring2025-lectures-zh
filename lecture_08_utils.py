@@ -9,7 +9,7 @@ import math
 from torch_util import get_device
 
 class DisableDistributed:
-    """Context manager that temporarily disables distributed functions (replaces with no-ops)"""
+    """上下文管理器，临时禁用分布式函数（替换为空操作）"""
     def __enter__(self):
         self.old_functions = {}
         for name in dir(dist):
@@ -24,9 +24,9 @@ class DisableDistributed:
 
 
 def spawn(func: Callable, world_size: int, *args, **kwargs):
-    # Note: assume kwargs are in the same order as what main needs
+    # 注意：假设 kwargs 的顺序与 main 需要的顺序相同
     if sys.gettrace():
-        # If we're being traced, run the function directly, since we can't trace through mp.spawn
+        # 如果正在被跟踪，直接运行函数，因为我们无法通过 mp.spawn 进行跟踪
         with DisableDistributed():
             args = (0, world_size,) + args + tuple(kwargs.values())
             func(*args)
@@ -36,7 +36,7 @@ def spawn(func: Callable, world_size: int, *args, **kwargs):
 
 
 def int_divide(a: int, b: int):
-    """Return a / b and throw an error if there's a remainder."""
+    """返回 a / b，如果有余数则抛出错误。"""
     assert a % b == 0
     return a // b
 
